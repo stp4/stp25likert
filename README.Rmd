@@ -1,0 +1,283 @@
+---
+title: "Likert-Grafiken"
+output:
+  html_document: default
+  github_document: default
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+
+require(stp25tools)
+require(stp25likert)
+require(cowplot)
+require(tidyverse)
+library(ggstats)
+library(ggplot2)
+#require(stp25stat2)
+
+set.seed(42)
+
+ 
+n <- 100
+lvs <- c("--", "-", "o", "+", "++")
+DF2 <- data.frame(
+  Magazines = cut(rnorm(n), 5, lvs),
+  Comic.books = cut(rnorm(n), 5, lvs),
+  Fiction = cut(rnorm(n), 5, lvs),
+  Newspapers = cut(rnorm(n), 5, lvs),
+  Geschlecht = cut(rnorm(n), 2, c("m", "f"))
+)
+
+n <- 243
+lvls <- c(
+  "Strongly disagree",
+  "Disagree",
+  "Neither", # agree nor disagree",
+  "Agree",
+  "Strongly agree"
+)
+
+DF_likert <-
+  tibble(
+    q1 = sample(lvls, n, replace = TRUE),
+    q2 = sample(lvls, n, replace = TRUE, prob = 5:1),
+    q3 = sample(lvls, n, replace = TRUE, prob = 1:5),
+    q4 = sample(lvls, n, replace = TRUE, prob = 1:5),
+    q5 = sample(lvls, n, replace = TRUE, prob = 1:5),
+    q6 = sample(lvls,n, replace = TRUE, prob = c(1, 0, 1, 1, 0)),
+    q7 = sample(lvls, n, replace = TRUE, prob = 1:5),
+    q8 = sample(lvls, n, replace = TRUE, prob = 1:5),
+    q9 = sample(lvls, n, replace = TRUE, prob = 1:5)
+  ) |>
+  mutate(across(everything(), ~ factor(.x, levels = lvls))) |>
+  mutate(Sex = sample(c("male", "female"), n, replace = TRUE),
+         Age = sample(c("18-30", "30-50", ">50"), n, replace = TRUE),
+         Sex =factor(Sex),
+         Age =factor(Age)
+
+         ) |>
+  stp25tools::Label(
+    # FC.2
+    q1 =  "Nuts.Seeds",
+    q2 =  "Legumes",
+    # FC.3
+    q3 = "Vegetables Juice ",
+    q4 = "Fruit",
+    q5 = "Vegetables",
+    #   FC.4
+    q6 = "Milk",
+    q7 = "Cheese",
+    q8 = "Yoghurt",
+    q9 = "Dairy Alternatives"
+  )
+
+
+
+DF_multi <-
+  tibble(
+    q1 = rbinom(n, 1, .50) ,
+    q2 = rbinom(n, 1, .40),
+    q3 = rbinom(n, 1, .55),
+    q4 = rbinom(n, 1, .56),
+    q5 = rbinom(n, 1, .53),
+    q6 = rbinom(n, 1, .20),
+    q7 = rbinom(n, 1, .85),
+    q8 = rbinom(n, 1, .95),
+    q9 = rbinom(n, 1, .25)
+  ) |>
+  # mutate(across(everything(), ~ factor(.x ))) |>
+  mutate(Sex = sample(c("male", "female"), n, replace = TRUE),
+         Age = sample(c("18-30", "30-50", ">50"), n, replace = TRUE),
+         Sex =factor(Sex),
+         Age =factor(Age)
+
+         ) |>
+  stp25tools::Label(
+    # FC.2
+    q1 =  "Nuts.Seeds",
+    q2 =  "Legumes",
+    # FC.3
+    q3 = "Vegetables Juice ",
+    q4 = "Fruit",
+    q5 = "Vegetables",
+    #   FC.4
+    q6 = "Milk",
+    q7 = "Cheese",
+    q8 = "Yoghurt",
+    q9 = "Dairy Alternatives"
+  )
+
+```
+ 
+ 
+Likert-Skalen sind Fragenbatterien, die mit vorgegebenen mehrstufigen Antwortskalen beantwortet werden.
+ Die dazugehörigen Fragen (Items) sind als strikt positive oder negative Aussagen formuliert.
+ 
+
+Die Auswertung erfolgt bei rein deskriptiven Fragestellungen durch Auszählung und Berechnung der Anteilswerte. Wenn die Stichprobe groß genug ist, kann eine Likertskala auch als metrische Skala angesehen werden und es können dann alle Kennzahlen wie z.B. Mittelwerte und Korrelationen berechnet werden. 
+ 
+ 
+### Likert -Tabelle
+
+
+
+```{r, warning=FALSE, message=FALSE}
+dat_l <-
+  Tbll_likert(DF2,
+              Magazines,
+              Comic.books,
+              Fiction,
+              Newspapers,
+              ReferenceZero = 2.5)
+
+dat_l |> kable(caption =" Likert-Skale")
+
+```
+
+
+```{r}
+dat_lg <- Tbll_likert(
+  DF2,
+  Magazines,
+  Comic.books,
+  Fiction,
+  Newspapers,
+  by =  ~ Geschlecht,
+  include.order = TRUE
+)
+
+dat_lg
+```
+
+
+
+
+## Klassiker Plot mit der HH Library
+
+Die Funktion `likertplot()` ist ein Workaround für die Funktion `HH:::plot.likert.formula`. Dabei kann ein Objekt, das mit der Funktion `Tbll_likert()` erzeugt wurde, mit allen notwendigen Parametern direkt übergeben werden. Mit HH lassen sich die Referenzlinien verschieben.
+
+ 
+
+```{r likert-plot-1, fig.height=3, fig.width=7}
+cowplot::plot_grid(
+  likertplot(dat_l,
+             auto.key = list(columns = 5)),
+  likertplot(
+    Item ~ . | Geschlecht,
+    data = dat_lg,
+    auto.key = list(columns = 5)
+  ),
+  ncol = 2,
+rel_widths = c(2,3)
+)
+
+```
+
+## Likert-Plot mit ggstats
+
+Optisch ansprechendere Plots lassen sich mit der Bibliothek 'ggstats', die ich von Joseph Larmarange übernommen (gestohlern) habe, erzeugen.
+
+https://github.com/larmarange/ggstats
+
+
+```{r ggstats-1, fig.height=2.5, fig.width=7}
+#' Hier das Orginal
+#'  
+ggstats::gglikert(
+  DF2,
+  c(Magazines,
+    Comic.books,
+    Fiction,
+    Newspapers),
+  facet_cols = vars(Geschlecht),
+   add_totals =FALSE,
+  labels_size = 3
+)
+```
+
+### Händich mit ggplot
+
+```{r ggplot-2, fig.height=2.5, fig.width=7}
+dat <- attr(dat_l, "plot")$results
+save_lvl <- names(dat)
+names(dat) <- c("Item", "l1", "l2", "l3", "l4", "l5")
+
+dat <-   Long(. ~ Item , dat, value = "Freq")
+levels(dat$variable) <- save_lvl[-1]
+
+  ggplot(dat) +
+  aes(
+    x = Item,
+    fill = variable ,
+    weight = Freq,
+    by = Item
+  ) +
+  geom_bar(position = "fill") +
+  geom_text(
+     aes(label = scales::percent(after_stat(prop), accuracy = 1)),
+    stat = "prop", position = position_fill(.5)) +
+    coord_flip()
+```
+ 
+ 
+ 
+### Neue Funktion likert_data und multi_data
+ 
+ 
+```{r, fig.height=4, fig.width=7}
+#' Here is the function with my customised implementation of gglikert_stacked()
+#' 
+DF_multi |>
+  multi_data(
+    q1,q2,q3,q4,q5,q6,q7,q8,q9,
+    by =  ~ Sex + Age,
+    grouping = list(
+      FC.2 = c("q1", "q2"),
+      FC.3 = "q3",
+      FC.4 =  c("q4", "q5", "q6"),
+      FC.5 = c("q7", "q8", "q9")
+    ),
+    include.order = TRUE
+  ) |>
+  gglikert_stacked(
+    include =levels,
+    weights = Freq,
+    y = Item,) +
+  facet_grid(.grouping ~ Sex, 
+             scales = "free", 
+             space = "free") +
+  theme_bw() +
+  theme(strip.text.y = element_text(angle = 0))
+
+
+```
+ 
+```{r, fig.height=4, fig.width=8}
+  DF_likert |>
+    likert_data(
+      q1,q2,q3,q4,q5,q6,q7,q8,q9,
+      by =  ~ Sex + Age,
+      grouping = list(
+        FC.2 = c("q1", "q2"),
+        FC.3 = "q3",
+        FC.4 =  c("q4", "q5", "q6"),
+        FC.5 = c("q7", "q8", "q9")
+      ),
+      include.order = TRUE
+    ) |>
+    stp25likert::gglikert(
+      include =levels,
+      weights = Freq,
+      y = Item,
+      add_labels = FALSE,
+      add_totals = TRUE,
+      ) +
+    facet_grid(.grouping ~ Sex, 
+               scales = "free", 
+               space = "free") +
+    theme_bw() +
+    theme(strip.text.y = element_text(angle = 0))
+```
+
