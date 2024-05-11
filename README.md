@@ -11,6 +11,14 @@ genug ist, kann eine Likertskala auch als metrische Skala angesehen
 werden und es können dann alle Kennzahlen wie z.B. Mittelwerte und
 Korrelationen berechnet werden.
 
+<!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/stp25stat2)](https://CRAN.R-project.org/package=stp25stat2)
+<!-- badges: end -->
+
 ### Likert -Tabelle
 
 ``` r

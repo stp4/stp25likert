@@ -34,6 +34,8 @@ Tbll_likert <- function(...){
 
 
 #' @rdname Tbll_likert
+#' @param exclude.levels position des zu excludierenden levels 
+#' (zb 'exclude.levels = 5' ist das gleiche wie 'reorder.levels = -5')
 #' @export
 #'
 Tbll_likert.default <- function(...,
@@ -45,6 +47,7 @@ Tbll_likert.default <- function(...,
                                 include.percent = TRUE,
                                 include.count = TRUE,
                                 include.total=FALSE,
+                                exclude.levels = NULL,
                                 decreasing = TRUE,
                                 ReferenceZero = include.reference,
                                 labels = c("low", "neutral", "high"),
@@ -54,7 +57,8 @@ Tbll_likert.default <- function(...,
     ...,
     reverse.levels = reverse.levels,
     reorder.levels = reorder.levels,
-    include.total = include.total
+    include.total = include.total,
+    exclude.levels = exclude.levels
   )
 
   tbl <-  Tbll_likert.likert(
@@ -221,8 +225,15 @@ Likert <- function(...,
                    labels = NULL,
                    reverse.levels = FALSE,
                    reorder.levels = NA,
-                   include.total = FALSE
+                   include.total = FALSE,
+                   exclude.levels = NULL
                    ) {
+
+  if(!is.null(exclude.levels )){
+    if(!is.na( reorder.levels )) stop( " reorder.levels in kombination mit exclude.levels geht nicht!")
+    reorder.levels <- exclude.levels * (-1)
+  }
+  
   if (!reverse.levels) {
     if (is.na(reorder.levels)) {
       results <-

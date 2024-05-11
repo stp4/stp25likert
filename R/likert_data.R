@@ -5,6 +5,7 @@
 #' @param x Tbll_likert -Objekt
 #' @param ... platzhalter
 #' @param include.total margin an Summarise
+#' @param  reverse.levels = FALSE, levels umdrehen
 #'
 #' @return long tibble mit Item, levels,  Freq
 #' @export
@@ -93,6 +94,7 @@ likert_data <- function(x,
                         ...,
                         grouping = NULL,
                         include.order = TRUE,
+                        reverse.levels = FALSE,
                         decreasing = TRUE,
                         use.level = NULL
                         ) {
@@ -100,13 +102,17 @@ likert_data <- function(x,
   lkt <- attr(x, "plot")
 
   if (is.null(lkt)) {
-    lkt <- likert_data_sum(x,..., use.level = use.level)
+    lkt <- likert_data_sum(x,..., 
+                           use.level = use.level,
+                           reverse.levels = reverse.levels)
     if (!is.null(grouping)) {
      # cat("\nin Grouping\n")
       itm <- grp <- 
         likert_data_sum(x,..., 
                         include.label = FALSE, 
-                        use.level = use.level)$results$Item
+                        use.level = use.level,
+                        reverse.levels = reverse.levels
+                        )$results$Item
 
       # Schleife duch die unterschiedlich langen labels
        for (i in seq_along(grouping)) {
@@ -166,30 +172,39 @@ likert_data <- function(x,
 #' @export
 #' @rdname likert_data
 multi_data <- function(...,
-                       use.level = 1) {
-  likert_data(...,  use.level = use.level)
+                       use.level = 1,  reverse.levels = FALSE) {
+  likert_data(...,  use.level = use.level,  reverse.levels = reverse.levels)
 }
 
 likert_data_sum  <-function(...,
                             include.total = FALSE,
-                            use.level = NULL ){
+                            use.level = NULL,
+                            reverse.levels = FALSE){
   rslt <-
     stp25stat2::Summarise(
       ...,
       fun = function(x) {
-           if (is.logical(x)) {x <- factor(x, c(TRUE, FALSE))}
-           else if (is.numeric(x)) {
-             if( any(x > 1)) stop("\nWenn Zahlen übergeben werden durfen die nur im Wertebereich von 0 bis 1 liegen!\n")
-             x <- factor(x, 1:0)
-           }
-           if(!is.null( use.level) ) {
-              x <-  factor(x == levels(x)[use.level], c(TRUE, FALSE))
-           }
-
-           table(x, useNA = "no")
-           },
-      key = "Item", margins = include.total
-  )
+        if (is.logical(x)) {
+          x <- factor(x, c(TRUE, FALSE))
+        }
+        else if (is.numeric(x)) {
+          if (any(x > 1))
+            stop("\nWenn Zahlen übergeben werden durfen die nur im Wertebereich von 0 bis 1 liegen!\n")
+          x <- factor(x, 1:0)
+        }
+        
+        if (!is.null(use.level)) {
+          x <- factor(x == levels(x)[use.level], c(TRUE, FALSE))
+        }
+        else if (reverse.levels){
+          x <- rev(x)
+          }
+        
+        table(x, useNA = "no")
+      },
+      key = "Item",
+      margins = include.total
+    )
 
   ncl <- ncol(rslt)
   col_names <- names(rslt[-ncl])
