@@ -287,6 +287,7 @@ likertplot <-
 #' @param include.total an stp25stat2:::Likert
 #' @param include.order sortiere muss die länge der Items entsprechen
 #' @param relevel  Uberschreibt die levels levels(x) <- relevel ist nur nur in likert_plot vorhanden
+#' @param relabel ändert die Sortierung
 #' @param par.strip.text an  HH:::plot.likert.formula
 #' @return HH likertplot (lattice-Plot)
 #' @export
@@ -322,7 +323,7 @@ likert_plot <-
            par.settings = NULL,
            include.reference = NULL,
            include.total = FALSE,
-           relevel = NULL,
+           relevel = NULL, relabel =NULL,
            include.order = NULL,
            decreasing =  TRUE,
 
@@ -338,10 +339,10 @@ likert_plot <-
   if(!is.null(positive.order))
     stop("positive.order geht nicht mehr\n\n Neu ist include.order aber die Ergebnisse im plot sind anderst!!\n")
 
-  if (is.null(relevel)){
+  if (is.null(relevel) | is.null(relabel)  ){
     X <- stp25stat2:::Likert(..., include.total=include.total)
    }
-  else{
+  else if (!is.null(relevel)){
     X_old <-  stp25tools::prepare_data2(...)
 
     X_old$data[X_old$measure.vars] <-
@@ -357,6 +358,25 @@ likert_plot <-
       )
     X <- stp25stat2:::Likert(X_old$formula,  X_old$data, include.total=include.total)
   }
+  else if (!is.null(relabel)){
+    X_old <-  stp25tools::prepare_data2(...)
+    
+    X_old$data[X_old$measure.vars] <-
+      stp25tools::dapply2(
+        X_old$data[X_old$measure.vars],
+        fun = function(x) {
+             factor(x, levels = relabel )
+        }
+      )
+    X <- stp25stat2:::Likert(X_old$formula,  X_old$data, include.total=include.total)
+  }
+  else {"Hier sollte ich nie landen"}
+  
+  
+  
+  
+  
+  
 
 
  if (!is.null(include.order)) {
