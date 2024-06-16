@@ -71,15 +71,15 @@ gglikert_stacked(
 \arguments{
 \item{data}{a data frame}
 
-\item{include}{variables to include, accept [tidy-select][dplyr::select]
+\item{include}{variables to include, accept  tidy-select dplyr::select 
 syntax}
 
 \item{weights}{optional variable name of a weighting variable,
-accept [tidy-select][dplyr::select] syntax}
+accept  tidy-select dplyr::select  syntax}
 
 \item{y}{name of the variable to be plotted on `y` axis (relevant when
 `.question` is mapped to "facets, see examples),
-accept [tidy-select][dplyr::select] syntax}
+accept  tidy-select dplyr::select  syntax}
 
 \item{variable_labels}{a named list or a named vector of custom variable
 labels}
@@ -97,7 +97,7 @@ to compute the proportion?}
 
 \item{exclude_fill_values}{Vector of values that should not be displayed
 (but still taken into account for computing proportions),
-see [position_likert()]}
+see  position_likert()}
 
 \item{add_labels}{should percentage labels be added to the plot?}
 
@@ -106,10 +106,10 @@ see [position_likert()]}
 \item{labels_color}{color of the percentage labels}
 
 \item{labels_accuracy}{accuracy of the percentages, see
-[scales::label_percent()]}
+scales::label_percent()}
 
 \item{labels_hide_below}{if provided, values below will be masked, see
-[label_percent_abs()]}
+label_percent_abs()}
 
 \item{add_totals}{should the total proportions of negative and positive
 answers be added to plot? **This option is not compatible with facets!**}
@@ -119,7 +119,7 @@ answers be added to plot? **This option is not compatible with facets!**}
 \item{totals_color}{color of the total proportions}
 
 \item{totals_accuracy}{accuracy of the total proportions, see
-[scales::label_percent()]}
+scales::label_percent()}
 
 \item{totals_include_center}{if the number of levels is uneven, should half
 of the center level be added to the total proportions?}
@@ -129,19 +129,19 @@ of the center level be added to the total proportions?}
 \item{y_reverse}{should the y axis be reversed?}
 
 \item{y_label_wrap}{number of characters per line for y axis labels, see
-[scales::label_wrap()]}
+scales::label_wrap()}
 
 \item{reverse_likert}{if `TRUE`, will reverse the default stacking order,
-see [position_likert()]}
+see  position_likert()}
 
-\item{width}{bar width, see [ggplot2::geom_bar()]}
+\item{width}{bar width, see  ggplot2::geom_bar()}
 
 \item{facet_rows, facet_cols}{A set of variables or expressions quoted by
-[ggplot2::vars()] and defining faceting groups on the rows or columns
+ ggplot2::vars()  and defining faceting groups on the rows or columns
 dimension (see examples)}
 
 \item{facet_label_wrap}{number of characters per line for facet labels, see
-[ggplot2::label_wrap_gen()]}
+ggplot2::label_wrap_gen()}
 
 \item{add_median_line}{add a vertical line at 50%?}
 
@@ -154,21 +154,8 @@ see [ggplot2::position_fill()]}
 A `ggplot2` plot or a `tibble`.
 }
 \description{
-`r lifecycle::badge("experimental")`
-}
-\details{
 stolen from Joseph Larmarange
 https://github.com/larmarange/ggstats/tree/main
-
-Combines several factor variables using the same list of ordered levels
-(e.g. Likert-type scales) into a unique data frame and generates a centered
-bar plot.
-
-You could use `gglikert_data()` to just produce the dataset to be plotted.
-
-If variable labels have been defined (see [labelled::var_label()]), they will
-be considered. You can also pass custom variables labels with the
-`variable_labels` argument.
 }
 \examples{
 library(ggplot2)
@@ -255,7 +242,4 @@ gglikert_stacked(df, q1:q6, add_median_line = TRUE, sort = "asc")
 gglikert_stacked(df_group, q1:q6, y = "group", add_median_line = TRUE) +
   facet_grid(rows = vars(.question))
 }
-}
-\seealso{
-`vignette("gglikert")`, [position_likert()], [stat_prop()]
 }

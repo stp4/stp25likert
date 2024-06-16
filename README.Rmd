@@ -155,6 +155,22 @@ dat_lg <- Tbll_likert(
 dat_lg
 ```
 
+Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
+
+```
+ DF2 |>
+   likert_data(
+     Magazines, Comic.books, Fiction, Newspapers,
+     by = ~ Geschlecht,
+     include.total = TRUE
+ )
+```
+
+oder auch aus dem Tbll_likert - Objekt
+
+```{r}
+stp25likert::likert_data(dat_lg)
+```
 
 
 
@@ -179,27 +195,6 @@ rel_widths = c(2,3)
 
 ```
 
-## Likert-Plot mit ggstats
-
-Optisch ansprechendere Plots lassen sich mit der Bibliothek 'ggstats', die ich von Joseph Larmarange übernommen (gestohlern) habe, erzeugen.
-
-https://github.com/larmarange/ggstats
-
-
-```{r ggstats-1, fig.height=2.5, fig.width=7}
-#' Hier das Orginal
-#'  
-ggstats::gglikert(
-  DF2,
-  c(Magazines,
-    Comic.books,
-    Fiction,
-    Newspapers),
-  facet_cols = vars(Geschlecht),
-   add_totals =FALSE,
-  labels_size = 3
-)
-```
 
 ### Händich mit ggplot
 
@@ -221,14 +216,20 @@ levels(dat$variable) <- save_lvl[-1]
   geom_bar(position = "fill") +
   geom_text(
      aes(label = scales::percent(after_stat(prop), accuracy = 1)),
-    stat = "prop", position = position_fill(.5)) +
-    coord_flip()
+     stat = "prop", position = position_fill(.5)) +
+     coord_flip()
+  
+#' Die Zeile  
+#' stat = "prop", position = position_fill(.5))  
+#' ist eine Funktion aus ggstats::stat_prop
+  
 ```
  
  
  
-### Neue Funktion likert_data und multi_data
+### gglikert_stacked mit likert_data und multi_data
  
+Neue Funktion `gglikert_stacked()`  diese habe die ich von Joseph Larmarange gestohlern - siehe orginale Funktion unten.
  
 ```{r, fig.height=4, fig.width=7}
 #' Here is the function with my customised implementation of gglikert_stacked()
@@ -245,7 +246,7 @@ DF_multi |>
     ),
     include.order = TRUE
   ) |>
-  gglikert_stacked(
+  stp25likert::gglikert_stacked(
     include =levels,
     weights = Freq,
     y = Item,) +
@@ -283,5 +284,60 @@ DF_multi |>
                space = "free") +
     theme_bw() +
     theme(strip.text.y = element_text(angle = 0))
+
+#' Das ist eine Kopie von ggstats::gglikert wobei default Einstellungen geändert sind
+#' und vor allem die anpassung an meine likert_data() Funktion
 ```
 
+
+
+```{r, fig.height=4, fig.width=8}
+
+DF_likert |>
+    likert_data(
+      q1, q2, q3, q4, q5, q6, q7, q8, q9,
+      by = ~ Sex + Age,
+      grouping = list(
+        FC.2 = c("q1", "q2"),
+        FC.3 = "q3",
+        FC.4 =  c("q4", "q5", "q6"),
+        FC.5 = c("q7", "q8", "q9")
+      ),
+      include.order = TRUE
+    ) |>
+    ggstats::gglikert_stacked(
+              include =levels,
+              weights = Freq,
+              y = Item) +
+    facet_grid(
+             .grouping ~ Sex, 
+             scales = "free", 
+             space = "free") +
+    theme_bw() +
+    theme(strip.text.y = element_text(angle = 0))
+  
+#'  stp25likert::gglikert_stacked ist eine alte Kopie von
+#'  ggstats::gglikert_stacked die neue Variante hat etwas mehr einstellungen
+```
+
+## Likert-Plot mit ggstats
+
+Optisch ansprechendere Plots lassen sich mit der Bibliothek 'ggstats', erzeugen.
+
+https://github.com/larmarange/ggstats
+
+
+```{r ggstats-1, fig.height=2.5, fig.width=7}
+#' Hier das Orginal
+#'  
+ggstats::gglikert(
+  DF2,
+  c(Magazines,
+    Comic.books,
+    Fiction,
+    Newspapers),
+  facet_cols = vars(Geschlecht),
+   add_totals =FALSE,
+  labels_size = 3
+)
+```

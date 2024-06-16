@@ -1,29 +1,18 @@
 #' Plotting Likert-type items
 #'
-#'
-#' `r lifecycle::badge("experimental")`
-#'
 #' stolen from Joseph Larmarange
 #' https://github.com/larmarange/ggstats/tree/main
 #' 
-#' Combines several factor variables using the same list of ordered levels
-#' (e.g. Likert-type scales) into a unique data frame and generates a centered
-#' bar plot.
 #'
-#' You could use `gglikert_data()` to just produce the dataset to be plotted.
-#'
-#' If variable labels have been defined (see [labelled::var_label()]), they will
-#' be considered. You can also pass custom variables labels with the
-#' `variable_labels` argument.
 #'
 #' @param data a data frame
-#' @param include variables to include, accept [tidy-select][dplyr::select]
+#' @param include variables to include, accept  tidy-select dplyr::select 
 #' syntax
 #' @param weights optional variable name of a weighting variable,
-#' accept [tidy-select][dplyr::select] syntax
+#' accept  tidy-select dplyr::select  syntax
 #' @param y name of the variable to be plotted on `y` axis (relevant when
 #' `.question` is mapped to "facets, see examples),
-#' accept [tidy-select][dplyr::select] syntax
+#' accept  tidy-select dplyr::select  syntax
 #' @param variable_labels a named list or a named vector of custom variable
 #' labels
 #' @param sort should variables be sorted?
@@ -36,38 +25,39 @@
 #' to compute the proportion?
 #' @param exclude_fill_values Vector of values that should not be displayed
 #' (but still taken into account for computing proportions),
-#' see [position_likert()]
+#' see  position_likert() 
 #' @param add_labels should percentage labels be added to the plot?
 #' @param labels_size size of the percentage labels
 #' @param labels_color color of the percentage labels
 #' @param labels_accuracy accuracy of the percentages, see
-#' [scales::label_percent()]
+#'  scales::label_percent() 
 #' @param labels_hide_below if provided, values below will be masked, see
-#' [label_percent_abs()]
+#'  label_percent_abs() 
 #' @param add_totals should the total proportions of negative and positive
 #' answers be added to plot? **This option is not compatible with facets!**
 #' @param totals_size size of the total proportions
 #' @param totals_color color of the total proportions
 #' @param totals_accuracy accuracy of the total proportions, see
-#' [scales::label_percent()]
+#'  scales::label_percent() 
 #' @param totals_fontface font face of the total proportions
 #' @param totals_include_center if the number of levels is uneven, should half
 #' of the center level be added to the total proportions?
 #' @param totals_hjust horizontal adjustment of totals labels on the x axis
 #' @param y_reverse should the y axis be reversed?
 #' @param y_label_wrap number of characters per line for y axis labels, see
-#' [scales::label_wrap()]
+#'  scales::label_wrap() 
 #' @param reverse_likert if `TRUE`, will reverse the default stacking order,
-#' see [position_likert()]
-#' @param width bar width, see [ggplot2::geom_bar()]
+#' see  position_likert() 
+#' @param width bar width, see  ggplot2::geom_bar() 
 #' @param facet_rows,facet_cols A set of variables or expressions quoted by
-#' [ggplot2::vars()] and defining faceting groups on the rows or columns
+#'  ggplot2::vars()  and defining faceting groups on the rows or columns
 #' dimension (see examples)
 #' @param facet_label_wrap number of characters per line for facet labels, see
-#' [ggplot2::label_wrap_gen()]
+#'  ggplot2::label_wrap_gen() 
 #' @return A `ggplot2` plot or a `tibble`.
-#' @seealso `vignette("gglikert")`, [position_likert()], [stat_prop()]
+#' 
 #' @export
+#' 
 #' @examples
 #' library(ggplot2)
 #' library(dplyr)

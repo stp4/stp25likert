@@ -1,18 +1,9 @@
 #' Stack objects on top of each another and center them around 0
 #'
-#' `r lifecycle::badge("experimental")`
 #'
 #' stolen from Joseph Larmarange
 #' https://github.com/larmarange/ggstats/tree/main
 #'
-#' `position_likert()` stacks proportion bars on top of each other and
-#' center them around zero (the same number of modalities are displayed on
-#' each side). This type of presentation is commonly used to display
-#' Likert-type scales.
-#' `position_likert_count()` uses counts instead of proportions.
-#'
-#' It is recommended to use `position_likert()` with `stat_prop()`
-#' and its `complete` argument (see examples).
 #'
 #' @param vjust Vertical adjustment for geoms that have a position
 #'   (like points or lines), not a dimension (like bars or areas). Set to
@@ -23,7 +14,7 @@
 #' @param exclude_fill_values Vector of values from the variable associated with
 #'   the `fill` aesthetic that should not be displayed (but still taken into
 #'   account for computing proportions)
-#' @seealso See [ggplot2::position_stack()] and [ggplot2::position_fill()]
+#' 
 #' @export
 #' @examples
 #' library(ggplot2)

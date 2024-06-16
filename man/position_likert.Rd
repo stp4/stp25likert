@@ -26,20 +26,8 @@ the `fill` aesthetic that should not be displayed (but still taken into
 account for computing proportions)}
 }
 \description{
-`r lifecycle::badge("experimental")`
-}
-\details{
 stolen from Joseph Larmarange
 https://github.com/larmarange/ggstats/tree/main
-
-`position_likert()` stacks proportion bars on top of each other and
-center them around zero (the same number of modalities are displayed on
-each side). This type of presentation is commonly used to display
-Likert-type scales.
-`position_likert_count()` uses counts instead of proportions.
-
-It is recommended to use `position_likert()` with `stat_prop()`
-and its `complete` argument (see examples).
 }
 \examples{
 library(ggplot2)
@@ -127,8 +115,5 @@ ggplot(diamonds) +
   scale_fill_brewer(palette = "PiYG") +
   xlab("proportion")
 }
-}
-\seealso{
-See [ggplot2::position_stack()] and [ggplot2::position_fill()]
 }
 \keyword{datasets}

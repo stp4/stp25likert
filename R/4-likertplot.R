@@ -8,15 +8,13 @@
 #' @param data daten
 #' @param main,ylab,sub,xlab Beschriftung
 #' @param col HH::brewer.pal.likert
-#' @param wrap Zeien Umbrechen
-#' farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)
+#' @param wrap Zeien Umbrechen farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)
 #' @param rightAxis,as.percent,ReferenceZero,reference.line.col,col.strip.background
 #' an HH:::plot.likert.formula
 #' @param include.order,decreasing Sortieren der Items
 #' @param positive.order das nicht verwenden!! - wird ueber Tbll_likert oder include.order = TRUE gesteuert.
 #' @param auto.key,columns,space  columns = 2,
-#' @param ... HH:::plot.likert.formula
-#'    between=list(x=0))
+#' @param ... HH:::plot.likert.formula  between=list(x=0))
 #'
 #' @return lattice Plot
 #' @export
@@ -339,7 +337,7 @@ likert_plot <-
   if(!is.null(positive.order))
     stop("positive.order geht nicht mehr\n\n Neu ist include.order aber die Ergebnisse im plot sind anderst!!\n")
 
-  if (is.null(relevel) | is.null(relabel)  ){
+  if (is.null(relevel) & is.null(relabel)  ){
     X <- stp25stat2:::Likert(..., include.total=include.total)
    }
   else if (!is.null(relevel)){

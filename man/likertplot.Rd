@@ -65,6 +65,7 @@ likert_plot(
   include.reference = NULL,
   include.total = FALSE,
   relevel = NULL,
+  relabel = NULL,
   include.order = NULL,
   decreasing = TRUE,
   caption = "",
@@ -93,8 +94,7 @@ likert_plot(
 
 \item{auto.key, columns, space}{columns = 2,}
 
-\item{wrap}{Zeien Umbrechen
-farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)}
+\item{wrap}{Zeien Umbrechen farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)}
 
 \item{...}{an stp25stat2::Likert}
 
@@ -105,6 +105,8 @@ farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)}
 \item{include.total}{an stp25stat2:::Likert}
 
 \item{relevel}{Uberschreibt die levels levels(x) <- relevel ist nur nur in likert_plot vorhanden}
+
+\item{relabel}{ändert die Sortierung}
 
 \item{include.table, include.mean, include.n, include.percent, include.count, include.na, caption}{Tabelle ausgeben (output ist eine Altlast)}
 
