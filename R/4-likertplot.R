@@ -22,7 +22,7 @@
 #' @examples
 #'
 #' #require(stp25plot)
-#' require(stp25stat2)
+#' #require(stp25stat2)
 #' set.seed(1)
 #' n <- 100
 #' lvs <- c("--", "-", "o", "+", "++")
@@ -338,7 +338,7 @@ likert_plot <-
     stop("positive.order geht nicht mehr\n\n Neu ist include.order aber die Ergebnisse im plot sind anderst!!\n")
 
   if (is.null(relevel) & is.null(relabel)  ){
-    X <- stp25stat2:::Likert(..., include.total=include.total)
+    X <- Likert(..., include.total=include.total)
    }
   else if (!is.null(relevel)){
     X_old <-  stp25tools::prepare_data2(...)
@@ -354,7 +354,7 @@ likert_plot <-
           x
         }
       )
-    X <- stp25stat2:::Likert(X_old$formula,  X_old$data, include.total=include.total)
+    X <- Likert(X_old$formula,  X_old$data, include.total=include.total)
   }
   else if (!is.null(relabel)){
     X_old <-  stp25tools::prepare_data2(...)
@@ -366,7 +366,7 @@ likert_plot <-
              factor(x, levels = relabel )
         }
       )
-    X <- stp25stat2:::Likert(X_old$formula,  X_old$data, include.total=include.total)
+    X <- Likert(X_old$formula,  X_old$data, include.total=include.total)
   }
   else {"Hier sollte ich nie landen"}
   
@@ -383,7 +383,7 @@ likert_plot <-
 
  if(include.table){
     stp25output2::Output(
-      stp25stat2::Tbll_likert(X,
+      Tbll_likert(X,
                               include.reference = ReferenceZero,
                               include.mean = include.mean,
                               include.n = include.n,

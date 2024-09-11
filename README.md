@@ -80,7 +80,7 @@ Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
 oder auch aus dem Tbll_likert - Objekt
 
 ``` r
-likert_data(dat_lg)
+stp25likert::likert_data(dat_lg)
 ```
 
     ## # A tibble: 40 × 4

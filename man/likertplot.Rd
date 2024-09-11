@@ -126,7 +126,7 @@ Die orginale Funktion hat bei der Sortierung (positive.order) einen Fehler.
 \examples{
 
 #require(stp25plot)
-require(stp25stat2)
+#require(stp25stat2)
 set.seed(1)
 n <- 100
 lvs <- c("--", "-", "o", "+", "++")
