@@ -10,17 +10,17 @@
 #' syntax
 #' @param weights optional variable name of a weighting variable,
 #' accept  tidy-select dplyr::select  syntax
-#' @param y name of the variable to be plotted on `y` axis (relevant when
-#' `.question` is mapped to "facets, see examples),
+#' @param y name of the variable to be plotted on y axis (relevant when
+#' .question is mapped to "facets, see examples),
 #' accept  tidy-select dplyr::select  syntax
 #' @param variable_labels a named list or a named vector of custom variable
 #' labels
 #' @param sort should variables be sorted?
-#' @param sort_method method used to sort the variables: `"prop"` sort according
-#' to the proportion of answers higher than the centered level, `"mean"`
-#' considers answer as a score and sort according to the mean score, `"median"`
+#' @param sort_method method used to sort the variables: prop sort according
+#' to the proportion of answers higher than the centered level, mean
+#' considers answer as a score and sort according to the mean score, median
 #' used the median and the majority judgment rule for tie-breaking.
-#' @param sort_prop_include_center when sorting with `"prop"` and if the number
+#' @param sort_prop_include_center when sorting with prop and if the number
 #' of levels is uneven, should half of the central level be taken into account
 #' to compute the proportion?
 #' @param exclude_fill_values Vector of values that should not be displayed
@@ -34,7 +34,8 @@
 #' @param labels_hide_below if provided, values below will be masked, see
 #'  label_percent_abs() 
 #' @param add_totals should the total proportions of negative and positive
-#' answers be added to plot? **This option is not compatible with facets!**
+#' answers be added to plot? 
+#' This option is not compatible with facets!
 #' @param totals_size size of the total proportions
 #' @param totals_color color of the total proportions
 #' @param totals_accuracy accuracy of the total proportions, see
@@ -46,7 +47,7 @@
 #' @param y_reverse should the y axis be reversed?
 #' @param y_label_wrap number of characters per line for y axis labels, see
 #'  scales::label_wrap() 
-#' @param reverse_likert if `TRUE`, will reverse the default stacking order,
+#' @param reverse_likert if TRUE, will reverse the default stacking order,
 #' see  position_likert() 
 #' @param width bar width, see  ggplot2::geom_bar() 
 #' @param facet_rows,facet_cols A set of variables or expressions quoted by
@@ -54,87 +55,35 @@
 #' dimension (see examples)
 #' @param facet_label_wrap number of characters per line for facet labels, see
 #'  ggplot2::label_wrap_gen() 
-#' @return A `ggplot2` plot or a `tibble`.
+#' @return A ggplot2 plot or a tibble.
 #' 
 #' @export
 #' 
 #' @examples
+#' 
 #' library(ggplot2)
-#' library(dplyr)
-#'
-#' likert_levels <- c(
-#'   "Strongly disagree",
-#'   "Disagree",
-#'   "Neither agree nor disagree",
-#'   "Agree",
-#'   "Strongly agree"
-#' )
-#' set.seed(42)
-#' df <-
-#'   tibble(
-#'     q1 = sample(likert_levels, 150, replace = TRUE),
-#'     q2 = sample(likert_levels, 150, replace = TRUE, prob = 5:1),
-#'     q3 = sample(likert_levels, 150, replace = TRUE, prob = 1:5),
-#'     q4 = sample(likert_levels, 150, replace = TRUE, prob = 1:5),
-#'     q5 = sample(c(likert_levels, NA), 150, replace = TRUE),
-#'     q6 = sample(likert_levels, 150, replace = TRUE, prob = c(1, 0, 1, 1, 0))
-#'   ) |>
-#'   mutate(across(everything(), ~ factor(.x, levels = likert_levels)))
-#'
-#' gglikert(df)
-#'
-#' gglikert(df, include = q1:3)
-#'
-#' gglikert(df, sort = "ascending")
-#'
-#' \donttest{
-#' gglikert(df, sort = "ascending", sort_prop_include_center = TRUE)
-#'
-#' gglikert(df, sort = "ascending", sort_method = "mean")
-#'
-#' gglikert(df, reverse_likert = TRUE)
-#'
-#' gglikert(df, add_totals = FALSE, add_labels = FALSE)
-#'
-#' gglikert(
-#'   df,
-#'   totals_include_center = TRUE,
-#'   totals_hjust = .25,
-#'   totals_size = 4.5,
-#'   totals_fontface = "italic",
-#'   totals_accuracy = .01,
-#'   labels_accuracy = 1,
-#'   labels_size = 2.5,
-#'   labels_hide_below = .25
-#' )
-#'
-#' gglikert(df, exclude_fill_values = "Neither agree nor disagree")
-#'
-#' if (require("labelled")) {
-#'   df |>
-#'     set_variable_labels(
-#'       q1 = "First question",
-#'       q2 = "Second question"
-#'     ) |>
-#'     gglikert(
-#'       variable_labels = c(
-#'         q4 = "a custom label",
-#'         q6 = "a very very very very very very very very very very long label"
-#'       ),
-#'       y_label_wrap = 25
-#'     )
-#' }
+#' 
+#' 
+#' DF <- dummy_likert_data()
+#' 
+#' gglikert(DF, include = q1:q9)
+#' 
+#' gglikert(DF, include = q1:q9, sort = "ascending")
+#' 
+#' #gglikert(DF, include = q1:q9, sort = "ascending", sort_prop_include_center = TRUE)
+#' #gglikert(DF, include = q1:q9, sort = "ascending", sort_method = "mean")
+#' #gglikert(DF, include = q1:q9, reverse_likert = TRUE)
+#' #gglikert(DF, include = q1:q9, add_totals = FALSE, add_labels = FALSE)
+#' #gglikert(DF, include = q1:q9, exclude_fill_values = "Neither agree nor disagree")
+#' 
 #'
 #' # Facets
-#' df_group <- df
-#' df_group$group <- sample(c("A", "B"), 150, replace = TRUE)
-#'
-#' gglikert(df_group, q1:q6, facet_rows = vars(group))
-#'
-#' gglikert(df_group, q1:q6, facet_cols = vars(group))
-#'
-#' gglikert(df_group, q1:q6, y = "group", facet_rows = vars(.question))
-#' }
+#' 
+#' gglikert(DF, q1:q6, facet_rows = vars(sex))
+#' # gglikert(DF, q1:q6, facet_cols = vars(sex))
+#' 
+#' gglikert(DF, q1:q6, y = "sex", facet_rows = vars(age))
+#' 
 gglikert <- function(data,
                      include = dplyr::everything(),
                      weights = NULL,
@@ -530,18 +479,20 @@ gglikert_data <- function(data,
 
 #' @rdname gglikert
 #' @param add_median_line add a vertical line at 50%?
-#' @param reverse_fill if `TRUE`, will reverse the default stacking order,
-#' see [ggplot2::position_fill()]
+#' @param reverse_fill if TRUE, will reverse the default stacking order,
+#' see ggplot2::position_fill
 #' @export
 #' @examples
+#' 
 #' gglikert_stacked(df, q1:q6)
 #'
 #' gglikert_stacked(df, q1:q6, add_median_line = TRUE, sort = "asc")
 #'
-#' \donttest{
-#' gglikert_stacked(df_group, q1:q6, y = "group", add_median_line = TRUE) +
-#'   facet_grid(rows = vars(.question))
-#' }
+#' 
+#' # gglikert_stacked(df_group, 
+#' #  q1:q6, y = "group", add_median_line = TRUE) +
+#' #  facet_grid(rows = vars(.question))
+#' 
 gglikert_stacked <- function(data,
                              include = dplyr::everything(),
                              weights = NULL,

@@ -17,94 +17,96 @@
 #' 
 #' @export
 #' @examples
+#' 
 #' library(ggplot2)
-#'
+#' require(dplyr)
 #' ggplot(diamonds) +
 #'   aes(y = clarity, fill = cut) +
 #'   geom_bar(position = "fill") +
 #'   scale_x_continuous(label = scales::label_percent()) +
 #'   scale_fill_brewer(palette = "PiYG") +
 #'   xlab("proportion")
-#'
+#' 
 #' ggplot(diamonds) +
 #'   aes(y = clarity, fill = cut) +
 #'   geom_bar(position = "likert") +
 #'   scale_x_continuous(label = label_percent_abs()) +
 #'   scale_fill_brewer(palette = "PiYG") +
 #'   xlab("proportion")
-#'
+#' 
 #' ggplot(diamonds) +
 #'   aes(y = clarity, fill = cut) +
 #'   geom_bar(position = "stack") +
 #'   scale_fill_brewer(palette = "PiYG")
-#'
+#' 
 #' ggplot(diamonds) +
 #'   aes(y = clarity, fill = cut) +
 #'   geom_bar(position = "likert_count") +
 #'   scale_x_continuous(label = label_number_abs()) +
 #'   scale_fill_brewer(palette = "PiYG")
-#'
-#' \donttest{
+#' 
+#' 
 #' # Reverse order -------------------------------------------------------------
-#'
+#' 
 #' ggplot(diamonds) +
 #'   aes(y = clarity, fill = cut) +
 #'   geom_bar(position = position_likert(reverse = TRUE)) +
 #'   scale_x_continuous(label = label_percent_abs()) +
 #'   scale_fill_brewer(palette = "PiYG", direction = -1) +
 #'   xlab("proportion")
-#'
-#' # Missing items -------------------------------------------------------------
-#' # example with a level not being observed for a specific value of y
-#' d <- diamonds
-#' d <- d[!(d$cut == "Premium" & d$clarity == "I1"), ]
-#' d <- d[!(d$cut %in% c("Fair", "Good") & d$clarity == "SI2"), ]
-#'
-#' # by default, the two lowest bar are not properly centered
-#' ggplot(d) +
-#'   aes(y = clarity, fill = cut) +
-#'   geom_bar(position = "likert") +
-#'   scale_fill_brewer(palette = "PiYG")
-#'
-#' # use stat_prop() with `complete = "fill"` to fix it
-#' ggplot(d) +
-#'   aes(y = clarity, fill = cut) +
-#'   geom_bar(position = "likert", stat = "prop", complete = "fill") +
-#'   scale_fill_brewer(palette = "PiYG")
-#'
-#' # Add labels ----------------------------------------------------------------
-#'
-#' custom_label <- function(x) {
-#'   p <- scales::percent(x, accuracy = 1)
-#'   p[x < .075] <- ""
-#'   p
-#' }
-#'
-#' ggplot(diamonds) +
-#'   aes(y = clarity, fill = cut) +
-#'   geom_bar(position = "likert") +
-#'   geom_text(
-#'     aes(by = clarity, label = custom_label(after_stat(prop))),
-#'     stat = "prop",
-#'     position = position_likert(vjust = .5)
-#'   ) +
-#'   scale_x_continuous(label = label_percent_abs()) +
-#'   scale_fill_brewer(palette = "PiYG", direction = -1) +
-#'   xlab("proportion")
-#'
-#' # Do not display specific fill values ---------------------------------------
-#' # (but taken into account to compute proportions)
-#'
-#' ggplot(diamonds) +
-#'   aes(y = clarity, fill = cut) +
-#'   geom_bar(position = position_likert(exclude_fill_values = "Very Good")) +
-#'   scale_x_continuous(label = label_percent_abs()) +
-#'   scale_fill_brewer(palette = "PiYG") +
-#'   xlab("proportion")
-#' }
-position_likert <- function(vjust = 1,
-                            reverse = FALSE,
-                            exclude_fill_values = NULL) {
+#' 
+#' # # Missing items -------------------------------------------------------------
+#' # # example with a level not being observed for a specific value of y
+#' # d <- diamonds
+#' # d <- d[!(d$cut == "Premium" & d$clarity == "I1"), ]
+#' # d <- d[!(d$cut %in% c("Fair", "Good") & d$clarity == "SI2"), ]
+#' # 
+#' # # by default, the two lowest bar are not properly centered
+#' # ggplot(d) +
+#' #   aes(y = clarity, fill = cut) +
+#' #   geom_bar(position = "likert") +
+#' #   scale_fill_brewer(palette = "PiYG")
+#' # 
+#' # # use stat_prop() with `complete = "fill"` to fix it
+#' # ggplot(d) +
+#' #   aes(y = clarity, fill = cut) +
+#' #   geom_bar(position = "likert", stat = "prop", complete = "fill") +
+#' #   scale_fill_brewer(palette = "PiYG")
+#' 
+#' # # Add labels ----------------------------------------------------------------
+#' # 
+#' # custom_label <- function(x) {
+#' #   p <- scales::percent(x, accuracy = 1)
+#' #   p[x < .075] <- ""
+#' #   p
+#' # }
+#' # 
+#' # ggplot(diamonds) +
+#' #   aes(y = clarity, fill = cut) +
+#' #   geom_bar(position = "likert") +
+#' #   geom_text(
+#' #     aes(by = clarity, label = custom_label(after_stat(prop))),
+#' #     stat = "prop",
+#' #     position = position_likert(vjust = .5)
+#' #   ) +
+#' #   scale_x_continuous(label = label_percent_abs()) +
+#' #   scale_fill_brewer(palette = "PiYG", direction = -1) +
+#' #   xlab("proportion")
+#' # 
+#' # # Do not display specific fill values ---------------------------------------
+#' # # (but taken into account to compute proportions)
+#' # 
+#' # ggplot(diamonds) +
+#' #   aes(y = clarity, fill = cut) +
+#' #   geom_bar(position = position_likert(exclude_fill_values = "Very Good")) +
+#' #   scale_x_continuous(label = label_percent_abs()) +
+#' #   scale_fill_brewer(palette = "PiYG") +
+#' #   xlab("proportion")
+
+position_likert <- 
+  function(vjust = 1,
+           reverse = FALSE,
+           exclude_fill_values = NULL) {
   ggplot2::ggproto(
     NULL,
     PositionLikert,

@@ -7,24 +7,10 @@
 #'
 #' @examples
 #'
-#' #'set.seed(1)
-#' n <- 100
-#' lvs <- c("--", "-", "o", "+", "++")
-#' DF2 <- data.frame(
-#'   Magazines = cut(rnorm(n), 5, lvs),
-#'   Comic.books = cut(rnorm(n), 5, lvs),
-#'   Fiction = cut(rnorm(n), 5, lvs),
-#'   Newspapers = cut(rnorm(n), 5, lvs),
-#'   Geschlecht = cut(rnorm(n), 2, c("m", "f"))
-#' )
-#'
-#' #x<-Tbll_likert(DF2, Magazines, Comic.books, Fiction, Newspapers, ReferenceZero=2)
-#'
-#' # stp25plot::likertplot(Item   ~ . , data = x)
-#'
-#' #
-#' Tbll_likert(DF2, Magazines, Comic.books, Fiction, Newspapers,
-#'             by=~Geschlecht,
+#' DF <- dummy_likert_data()
+#' 
+#' Tbll_likert(DF2, q1, q2, q3,
+#'             by=~sex,
 #'             include.order=TRUE)
 #'
 Tbll_likert <- function(...){
@@ -60,6 +46,8 @@ Tbll_likert.default <- function(...,
     include.total = include.total,
     exclude.levels = exclude.levels
   )
+
+
 
   tbl <-  Tbll_likert.likert(
     rslt,
@@ -113,6 +101,8 @@ Tbll_likert.likert <- function(x,
 
 
   note <- NULL # für include.reference
+  
+  #  print(x$freq)
   if (!is.null(ReferenceZero)) {
     # x$freq und x$freq.na werden neu zudammengefasst
     if (is.character(ReferenceZero))
@@ -200,6 +190,8 @@ Tbll_likert.likert <- function(x,
 
   ans <- cbind(x$names, x$freq)
 
+  
+
   if (include.order) {
       ans <- ans[order(x$m, decreasing=decreasing),]
   }
@@ -235,15 +227,20 @@ Likert <- function(...,
   }
   
   if (!reverse.levels) {
-    if (is.na(reorder.levels)) {
+   #  cat("\n !reverse.levels")
+    if (is.na(reorder.levels)) {  # cat("\n is.na(reorder.levels)\n")
       results <-
-        stp25stat2::Summarise(...,
+        stp25stat2::Summarise(
+          ...,
           fun = function(x) {
+         #   print(levels(x))
             if(is.logical(x)) x <- factor(x, c(FALSE, TRUE))
             table(x, useNA = "always")
             },
           key = "Item"
       )
+    #  print(results)
+      
       item_mean <-
         stp25stat2::Summarise(
           ...,
@@ -278,7 +275,7 @@ Likert <- function(...,
 
       item_mean <-
         stp25stat2::Summarise(
-          ...,
+              ...,
           fun = function(x){
             if (is.numeric(reorder.levels))
               x <- factor(x, levels(x)[reorder.levels])
@@ -332,6 +329,9 @@ Likert <- function(...,
       key = "Item" )$value
   }
 
+  
+ 
+  
   nms <- sapply(results, is.integer)
   ncl <- ncol(results)
   names(results)[ncl] <- "NA"
@@ -417,5 +417,4 @@ print.likert<-function(x, ...){
 #
 # https://jakec007.github.io/2021-06-23-R-likert/
 # https://blog.datawrapper.de/divergingbars/
-
 
