@@ -110,18 +110,21 @@ the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
 be completed for unobserved values (see example)}
 }
 \value{
-A `ggplot2` plot with the added statistic.
+A ggplot2 plot with the added statistic.
 }
 \description{
-`stat_prop()` is a variation of [ggplot2::stat_count()] allowing to
+stat_prop() is a variation of [ggplot2::stat_count()] allowing to
 compute custom proportions according to the **by** aesthetic defining
 the denominator (i.e. all proportions for a same value of **by** will
 sum to 1). The **by** aesthetic should be a factor. If **by** is not
 specified, proportions of the total will be computed.
 }
+\details{
+https://github.com/tidyverse/ggplot2/issues/5505#issuecomment-1791324008>.
+}
 \section{Aesthetics}{
 
-`stat_prop()` understands the following aesthetics
+stat_prop() understands the following aesthetics
 (required aesthetics are in bold):
 
 - **x *or* y**
@@ -139,7 +142,9 @@ specified, proportions of the total will be computed.
 }
 
 \examples{
+
 library(ggplot2)
+require(dplyr)
 d <- as.data.frame(Titanic)
 
 p <- ggplot(d) +
@@ -157,33 +162,18 @@ ggplot(d) +
     stat = "prop",
     position = position_dodge(0.9), vjust = "bottom"
   )
-\donttest{
-if (requireNamespace("scales")) {
-  ggplot(d) +
-    aes(x = Class, fill = Survived, weight = Freq, by = 1) +
-    geom_bar() +
-    geom_text(
-      aes(label = scales::percent(after_stat(prop), accuracy = 1)),
-      stat = "prop",
-      position = position_stack(.5)
-    )
-}
 
-# displaying unobserved levels with complete
-d <- diamonds |>
-  dplyr::filter(!(cut == "Ideal" & clarity == "I1")) |>
-  dplyr::filter(!(cut == "Very Good" & clarity == "VS2")) |>
-  dplyr::filter(!(cut == "Premium" & clarity == "IF"))
-p <- ggplot(d) +
-  aes(x = clarity, fill = cut, by = clarity) +
-  geom_bar(position = "fill")
-p + geom_text(stat = "prop", position = position_fill(.5))
-p + geom_text(stat = "prop", position = position_fill(.5), complete = "fill")
-}
-}
-\seealso{
-`vignette("stat_prop")`, [ggplot2::stat_count()]. For an alternative
-approach, see
-<https://github.com/tidyverse/ggplot2/issues/5505#issuecomment-1791324008>.
+
+# # displaying unobserved levels with complete
+# d <- diamonds |>
+#   dplyr::filter(!(cut == "Ideal" & clarity == "I1")) |>
+#   dplyr::filter(!(cut == "Very Good" & clarity == "VS2")) |>
+#   dplyr::filter(!(cut == "Premium" & clarity == "IF"))
+# p <- ggplot(d) +
+#   aes(x = clarity, fill = cut, by = clarity) +
+#   geom_bar(position = "fill")
+# p + geom_text(stat = "prop", position = position_fill(.5))
+# p + geom_text(stat = "prop", position = position_fill(.5), complete = "fill")
+#  
 }
 \keyword{datasets}

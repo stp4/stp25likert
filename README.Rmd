@@ -155,11 +155,11 @@ dat_lg <- Tbll_likert(
 dat_lg
 ```
 
-Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
+Die Lang-Form der Dataen kann mit `Summarise_likert()` erzeugt werden.
 
 ```
  DF2 |>
-   likert_data(
+   Summarise_likert(
      Magazines, Comic.books, Fiction, Newspapers,
      by = ~ Geschlecht,
      include.total = TRUE
@@ -169,7 +169,7 @@ Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
 oder auch aus dem Tbll_likert - Objekt
 
 ```{r}
-stp25likert::likert_data(dat_lg)
+stp25likert::Summarise_likert(dat_lg)
 ```
 
 
@@ -235,7 +235,7 @@ Neue Funktion `gglikert_stacked()`  diese habe die ich von Joseph Larmarange ges
 #' Here is the function with my customised implementation of gglikert_stacked()
 #' 
 DF_multi |>
-  multi_data(
+  Summarise_multi(
     q1,q2,q3,q4,q5,q6,q7,q8,q9,
     by =  ~ Sex + Age,
     grouping = list(
@@ -261,7 +261,7 @@ DF_multi |>
  
 ```{r, fig.height=4, fig.width=8}
   DF_likert |>
-    likert_data(
+    Summarise_likert(
       q1,q2,q3,q4,q5,q6,q7,q8,q9,
       by =  ~ Sex + Age,
       grouping = list(
@@ -286,7 +286,7 @@ DF_multi |>
     theme(strip.text.y = element_text(angle = 0))
 
 #' Das ist eine Kopie von ggstats::gglikert wobei default Einstellungen geändert sind
-#' und vor allem die anpassung an meine likert_data() Funktion
+#' und vor allem die anpassung an meine Summarise_likert() Funktion
 ```
 
 
@@ -294,7 +294,7 @@ DF_multi |>
 ```{r, fig.height=4, fig.width=8}
 
 DF_likert |>
-    likert_data(
+    Summarise_likert(
       q1, q2, q3, q4, q5, q6, q7, q8, q9,
       by = ~ Sex + Age,
       grouping = list(

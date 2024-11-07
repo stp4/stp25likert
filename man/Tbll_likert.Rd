@@ -89,24 +89,10 @@ Likert: Auszählen der Häufigkeiten
 }
 \examples{
 
-#'set.seed(1)
-n <- 100
-lvs <- c("--", "-", "o", "+", "++")
-DF2 <- data.frame(
-  Magazines = cut(rnorm(n), 5, lvs),
-  Comic.books = cut(rnorm(n), 5, lvs),
-  Fiction = cut(rnorm(n), 5, lvs),
-  Newspapers = cut(rnorm(n), 5, lvs),
-  Geschlecht = cut(rnorm(n), 2, c("m", "f"))
-)
+DF <- dummy_likert_data()
 
-#x<-Tbll_likert(DF2, Magazines, Comic.books, Fiction, Newspapers, ReferenceZero=2)
-
-# stp25plot::likertplot(Item   ~ . , data = x)
-
-#
-Tbll_likert(DF2, Magazines, Comic.books, Fiction, Newspapers,
-            by=~Geschlecht,
+Tbll_likert(DF2, q1, q2, q3,
+            by=~sex,
             include.order=TRUE)
 
 }

@@ -68,10 +68,10 @@ dat_lg
     ## 7 m          Newspapers  16% (11) 37% (25) 33% (22) 10% (7)  3% (2)  2.46 (0.99)
     ## 8 f          Comic.books 18% (6)  33% (11) 42% (14) 6% (2)   . (0)   2.36 (0.86)
 
-Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
+Die Lang-Form der Dataen kann mit `Summarise_likert()` erzeugt werden.
 
      DF2 |>
-       likert_data(
+       Summarise_likert(
          Magazines, Comic.books, Fiction, Newspapers,
          by = ~ Geschlecht,
          include.total = TRUE
@@ -80,7 +80,7 @@ Die Lang-Form der Dataen kann mit `likert_data()` erzeugt werden.
 oder auch aus dem Tbll_likert - Objekt
 
 ``` r
-stp25likert::likert_data(dat_lg)
+stp25likert::Summarise_likert(dat_lg)
 ```
 
     ## # A tibble: 40 × 4
@@ -162,7 +162,7 @@ Larmarange gestohlern - siehe orginale Funktion unten.
 #' Here is the function with my customised implementation of gglikert_stacked()
 #' 
 DF_multi |>
-  multi_data(
+  Summarise_multi(
     q1,q2,q3,q4,q5,q6,q7,q8,q9,
     by =  ~ Sex + Age,
     grouping = list(
@@ -188,7 +188,7 @@ DF_multi |>
 
 ``` r
   DF_likert |>
-    likert_data(
+    Summarise_likert(
       q1,q2,q3,q4,q5,q6,q7,q8,q9,
       by =  ~ Sex + Age,
       grouping = list(
@@ -217,12 +217,12 @@ DF_multi |>
 
 ``` r
 #' Das ist eine Kopie von ggstats::gglikert wobei default Einstellungen geändert sind
-#' und vor allem die anpassung an meine likert_data() Funktion
+#' und vor allem die anpassung an meine Summarise_likert() Funktion
 ```
 
 ``` r
 DF_likert |>
-    likert_data(
+    Summarise_likert(
       q1, q2, q3, q4, q5, q6, q7, q8, q9,
       by = ~ Sex + Age,
       grouping = list(
