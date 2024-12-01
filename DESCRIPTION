@@ -1,8 +1,8 @@
 Package: stp25likert
 Type: Package
 Title: Analysis of Likert-type items.
-Version: 0.1.0
-Date: 17-03-2024
+Version: 1.0.0
+Date: 01-12-2024
 Authors@R: person("Wolfgang", "Peter", email = "w.peter@statistik-peter.at",  role = c("aut", "cre"))
 Description: The purpose of stp25stat2 is to facilitate work and provide functions for creating statistical evaluation tables.
 License: GPL-3 
@@ -17,7 +17,9 @@ Imports:
   ggplot2, 
   HH,
   lifecycle,
-  ggstats
+  ggstats,
+  lattice,
+  RColorBrewer
 Suggests: 
  stats, 
  methods,   
@@ -31,5 +33,6 @@ Suggests:
  cli,
  rlang,
  broom.helpers,
- labelled
+ labelled,
+ latticeExtra
 Language: de_DE
