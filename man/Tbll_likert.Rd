@@ -2,7 +2,7 @@
 % Please edit documentation in R/tbll_likert.R
 \name{Tbll_likert}
 \alias{Tbll_likert}
-\alias{Tbll_likert.default}
+\alias{Tbll_likert.data.frame}
 \alias{Tbll_likert.likert}
 \alias{Likert}
 \alias{print.likert}
@@ -10,7 +10,8 @@
 \usage{
 Tbll_likert(...)
 
-\method{Tbll_likert}{default}(
+\method{Tbll_likert}{data.frame}(
+  x,
   ...,
   include.reference = NULL,
   include.mean = TRUE,
@@ -57,6 +58,8 @@ Likert(
 \arguments{
 \item{...}{Likert-Objekt oder data+Formula}
 
+\item{x}{Likert - Objekt}
+
 \item{include.reference, labels, ReferenceZero}{numeric include.reference = 2 (drei Gruppen)
 include.reference = 2.5 (zwei Gruppen)
  Neutrales Element in Kombination mit
@@ -68,16 +71,14 @@ include.reference = 2.5 (zwei Gruppen)
 
 \item{include.percent, include.count}{Format Prozent/Anzahl}
 
-\item{include.total}{logical oder string zB. include.total ="Alle"}
+\item{include.total}{An Summarise_likert und Likert: logical oder string  zB. include.total ="Alle"}
 
-\item{exclude.levels}{position des zu excludierenden levels 
+\item{exclude.levels}{An Summarise_likert und position des zu excludierenden levels 
 (zb 'exclude.levels = 5' ist das gleiche wie 'reorder.levels = -5')}
 
-\item{reverse.levels}{logical  rev(item)}
+\item{reverse.levels}{An Summarise_likert und Likert: logical  rev(item)}
 
-\item{reorder.levels}{integer factor(item, levels(item)[reorder.levels])}
-
-\item{x}{Likert - Objekt}
+\item{reorder.levels}{An Summarise_likert und Likert: integer factor(item, levels(item)[reorder.levels])}
 }
 \value{
 data.frame mit attributen fuer plotlikert
@@ -85,14 +86,13 @@ data.frame mit attributen fuer plotlikert
 liste mit  results = data, sowie m, sd, n
 }
 \description{
-Likert: Auszählen der Häufigkeiten
+Likert: Auszählen der Häufigkeiten Obsolet neu ist Summarise_likert()
 }
 \examples{
 
-DF <- dummy_likert_data()
-
-Tbll_likert(DF2, q1, q2, q3,
-            by=~sex,
-            include.order=TRUE)
-
+Likert <- dummy_likert_data(245)
+Likert |> Tbll_likert(q1, q2, q3,
+                      by = ~ Sex,
+                      include.order=TRUE)
+                      
 }
