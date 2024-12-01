@@ -7,50 +7,173 @@
 #'
 #' @examples
 #'
-#' DF <- dummy_likert_data()
-#' 
-#' Tbll_likert(DF2, q1, q2, q3,
-#'             by=~sex,
-#'             include.order=TRUE)
-#'
+#' Likert <- dummy_likert_data(245)
+#' Likert |> Tbll_likert(q1, q2, q3,
+#'                       by = ~ Sex,
+#'                       include.order=TRUE)
+#'                       
 Tbll_likert <- function(...){
   UseMethod("Tbll_likert")
 }
 
+extract_likert <-
+  function(x,
+           include.reference = NULL,
+           include.mean = TRUE,
+           include.n = FALSE,
+           include.na = FALSE,
+           include.order = FALSE,
+           include.percent = TRUE,
+           include.count = TRUE,
+           ReferenceZero = include.reference,
+           labels = c("low", "neutral", "high"),
+           decreasing = TRUE,
+           ...) {
+    x <-  attr(x, "tbll")
+    note <- NULL  
+    
+    if (!is.null(ReferenceZero)) {
+      if (is.character(ReferenceZero))
+        ReferenceZero <- which(x$levels %in% ReferenceZero)
+      else if (!is.numeric(ReferenceZero))
+        ReferenceZero <- median(seq_len(x$nlevels))
+      
+      if (ceiling(ReferenceZero) == floor(ReferenceZero)) {
+        lowrange <- seq_len((ReferenceZero - 1))
+        neutral <- ReferenceZero
+        highrange <- (ReferenceZero + 1):x$nlevels
+        
+        freq <- cbind(
+          lowrange =  RowSums2(x$freq[, lowrange]),
+          neutral =   x$freq[, neutral],
+          highrange = RowSums2(x$freq[, highrange])
+        )
+        if (is.null(note))
+          note <-
+          paste(
+            "lowrange:",
+            paste(x$levels[lowrange], "\n", collapse = "|"),
+            "neutral:",
+            paste(x$levels[neutral], "\n", collapse = "|"),
+            "highrange:",
+            paste(x$levels[highrange], collapse = "|")
+          )
+        
+        colnames(freq) <-
+          c(
+            paste0(labels[1], "(1:", ReferenceZero - 1, ")"),
+            paste0(labels[2], "(", ReferenceZero, ")"),
+            paste0(labels[3], "(", ReferenceZero + 1, ":", x$nlevels, ")")
+          )
+        
+        x$freq <- freq
+        
+      } else{
+        lowrange <- seq_len(floor(ReferenceZero))
+        highrange <- ceiling(ReferenceZero):x$nlevels
+        
+        freq <-
+          cbind(lowrange =  RowSums2(x$freq[, lowrange]),
+                highrange = RowSums2(x$freq[, highrange]))
+        colnames(freq) <-
+          c(
+            paste0(labels[1], "(1:", floor(ReferenceZero), ")"),
+            paste0(labels[3], "(", ceiling(ReferenceZero), ":", x$nlevels, ")")
+          )
+        if (is.null(note))
+          note <-
+          paste(
+            "lowrange:",
+            paste(x$levels[lowrange], "\n", collapse = "|"),
+            "highrange:",
+            paste(x$levels[highrange], collapse = "|")
+          )
+        x$freq <- freq
+      }
+      
+      if (include.na)
+        x$freq  <- cbind(x$freq, Missing = x$mean$missing)
+    }
+    
+    
+    if (include.percent) {
+      if (include.count)
+        x$freq <- 
+          stp25stat2:::rndr_percent(x$freq / x$mean$n * 100, x$freq)
+      else
+        x$freq <-
+          stp25stat2:::rndr_percent(x$freq / x$mean$n * 100)
+    } else if (!include.count) {
+      x$freq <- ""
+    }
+    
+    if (include.n) 
+      x$freq <- cbind(n = x$mean$n, x$freq)
+    
+    if (include.mean) 
+      x$freq <- cbind(x$freq, 
+                      'M(SD)' = stp25stat2:::rndr_mean(x$mean$m, x$mean$sd))
+    
+    ans <- cbind(x$names, x$freq)
+    
+    if (include.order) 
+      ans <- ans[order(x$mean$m, decreasing = decreasing), ]
+    
+    
+    stp25stat2::prepare_output(ans,
+                               caption = "Likert",
+                               note = note,
+                               N = x$N)
+  }
+
+
 
 
 #' @rdname Tbll_likert
-#' @param exclude.levels position des zu excludierenden levels 
+#' 
+#' @param include.reference,labels,ReferenceZero  numeric include.reference = 2 (drei Gruppen)
+#' include.reference = 2.5 (zwei Gruppen)
+#'  Neutrales Element in Kombination mit
+#'  labels = c("low", "neutral", "high")
+#' @param include.mean,include.n,include.na Zusatz Ergebnisse
+#' @param include.order,decreasing sortierung nach mittelwert
+#' @param include.percent,include.count Format Prozent/Anzahl
+#
+#' @param include.total An Summarise_likert und Likert: logical oder string  zB. include.total ="Alle"
+#' @param reorder.levels An Summarise_likert und Likert: integer factor(item, levels(item)[reorder.levels])
+#' @param reverse.levels An Summarise_likert und Likert: logical  rev(item)
+#' @param exclude.levels An Summarise_likert und position des zu excludierenden levels 
 #' (zb 'exclude.levels = 5' ist das gleiche wie 'reorder.levels = -5')
+#' 
 #' @export
-#'
-Tbll_likert.default <- function(...,
-                                include.reference = NULL,
-                                include.mean = TRUE,
-                                include.n = FALSE,
-                                include.na = FALSE,
-                                include.order = FALSE,
-                                include.percent = TRUE,
-                                include.count = TRUE,
-                                include.total=FALSE,
-                                exclude.levels = NULL,
-                                decreasing = TRUE,
-                                ReferenceZero = include.reference,
-                                labels = c("low", "neutral", "high"),
-                                reverse.levels = FALSE,
-                                reorder.levels = NA) {
-  rslt <-   Likert(
-    ...,
-    reverse.levels = reverse.levels,
-    reorder.levels = reorder.levels,
-    include.total = include.total,
-    exclude.levels = exclude.levels
-  )
-
-
-
-  tbl <-  Tbll_likert.likert(
-    rslt,
+Tbll_likert.data.frame <- 
+   function(x,
+            ...,
+            include.reference = NULL,
+            include.mean = TRUE,
+            include.n = FALSE,
+            include.na = FALSE,
+            include.order = FALSE,
+            include.percent = TRUE,
+            include.count = TRUE,
+            include.total = FALSE,
+            exclude.levels = NULL,
+            decreasing = TRUE,
+            ReferenceZero = include.reference,
+            labels = c("low", "neutral", "high"),
+            reverse.levels = FALSE,
+            reorder.levels = NA) {
+  if (is.null(attr(x, "likert"))) {
+    x <- Summarise_likert(
+      x,...,
+      reverse.levels = reverse.levels,
+      reorder.levels = reorder.levels,
+      include.total = include.total,
+      exclude.levels = exclude.levels
+    )
+  }
+  extract_likert(
+    x,
     ReferenceZero = ReferenceZero,
     include.mean = include.mean,
     include.n = include.n,
@@ -61,30 +184,10 @@ Tbll_likert.default <- function(...,
     labels = labels,
     decreasing = decreasing
   )
-
-  attr(tbl, "plot") <- list(
-    item = levels(rslt$results$Item),
-    formula =  rslt$formula,
-    results =  rslt$results,
-    nlevels = rslt$nlevels,
-    ReferenceZero = ReferenceZero,
-    m = rslt$m
-  )
-
-tbl
 }
 
 #' @rdname Tbll_likert
 #' @param x Likert - Objekt
-#' @param include.reference,labels,ReferenceZero  numeric include.reference = 2 (drei Gruppen)
-#' include.reference = 2.5 (zwei Gruppen)
-#'  Neutrales Element in Kombination mit
-#'  labels = c("low", "neutral", "high")
-#' @param include.mean,include.n,include.na Zusatz Ergebnisse
-#' @param include.order,decreasing sortierung nach mittelwert
-#' @param include.percent,include.count Format Prozent/Anzahl
-#
-#' @param reverse.levels an Likert
 #' @export
 #'
 Tbll_likert.likert <- function(x,
@@ -102,7 +205,6 @@ Tbll_likert.likert <- function(x,
 
   note <- NULL # für include.reference
   
-  #  print(x$freq)
   if (!is.null(ReferenceZero)) {
     # x$freq und x$freq.na werden neu zudammengefasst
     if (is.character(ReferenceZero))
@@ -168,9 +270,6 @@ Tbll_likert.likert <- function(x,
       freq
   }
 
-
-
-
   if (include.na) {x$freq <- x$freq.na}
 
   if (include.percent) {
@@ -191,7 +290,6 @@ Tbll_likert.likert <- function(x,
   ans <- cbind(x$names, x$freq)
 
   
-
   if (include.order) {
       ans <- ans[order(x$m, decreasing=decreasing),]
   }
@@ -205,11 +303,8 @@ Tbll_likert.likert <- function(x,
 
 #' @rdname Tbll_likert
 #' @description
-#' Likert: Auszählen der Häufigkeiten
+#' Likert: Auszählen der Häufigkeiten Obsolet neu ist Summarise_likert()
 #'
-#' @param include.total logical oder string zB. include.total ="Alle"
-#' @param reorder.levels integer factor(item, levels(item)[reorder.levels])
-#' @param reverse.levels logical  rev(item)
 #'
 #' @return liste mit  results = data, sowie m, sd, n
 #' @export
@@ -220,14 +315,19 @@ Likert <- function(...,
                    include.total = FALSE,
                    exclude.levels = NULL
                    ) {
+  lifecycle::deprecate_soft("1.0.0", 
+                            "Likert()", "Summarise_likert()", 
+                            details =
+                              "Likert ist ein Loeschkandidat")
 
   if(!is.null(exclude.levels )){
-    if(!is.na( reorder.levels )) stop( " reorder.levels in kombination mit exclude.levels geht nicht!")
+    if(!is.na( reorder.levels )) 
+      stop( "reorder.levels in kombination mit exclude.levels geht nicht!")
     reorder.levels <- exclude.levels * (-1)
   }
   
   if (!reverse.levels) {
-   #  cat("\n !reverse.levels")
+     # reorder.levels = NA
     if (is.na(reorder.levels)) {  # cat("\n is.na(reorder.levels)\n")
       results <-
         stp25stat2::Summarise(
@@ -239,8 +339,6 @@ Likert <- function(...,
             },
           key = "Item"
       )
-    #  print(results)
-      
       item_mean <-
         stp25stat2::Summarise(
           ...,
@@ -329,9 +427,6 @@ Likert <- function(...,
       key = "Item" )$value
   }
 
-  
- 
-  
   nms <- sapply(results, is.integer)
   ncl <- ncol(results)
   names(results)[ncl] <- "NA"
@@ -359,9 +454,6 @@ Likert <- function(...,
     item_mean <- c(item_mean, rslt_total$m)
     item_sd <- c(item_sd, rslt_total$sd)
   }
-
-
-
 
   rslt <- list(
     results = results[-ncl],
@@ -403,8 +495,11 @@ print.likert<-function(x, ...){
 
 # my personal preference, when dealing with likert scales, is to complement the
 # presentation of the detailed responses with the so-called Dominant Opinion Index
-# (don't remember who first came up with the idea) : DOI = (% positive - % negative)
-# x (% positive + % negative) = (% positive - % negative) x (100% - % neutral)
+# (don't remember who first came up with the idea) : 
+# 
+# DOI = (% positive - % negative) 
+#         x (% positive + % negative) = 
+#                    (% positive - % negative) x (100% - % neutral)
 # # the formula becomes slightly more complicated if the intensity of opinion
 # (e.g., agree vs strongly agree) is taken into account and the percentages are
 # weighted based on that
