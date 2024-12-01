@@ -1,191 +1,75 @@
-#' Summary likert data
-#' 
-#' Summe der Items als Long-Datafile.
-#' 
-#' You could use `gglikert_data()` to just produce the dataset to be plotted.
+#' Dummy Daten
 #'
-#' @param x Tbll_likert -Objekt
-#' @param ... platzhalter
-#' @param reverse.levels logical.  levels umdrehen
-#' @param grouping list. 
-#' @param include.order logical.
-#' @param decreasing logical.
-#' @param use.level logical.
+#' @param n integer. Anzahl
+#' @param levels character. 
 #'
-#' @return long tibble mit Item, levels,  Freq
+#' @return data.frame
+#' @import dplyr
 #' @export
 #'
-#' @examples
-#'  
-#' DF <- dummy_likert_data()
-#' 
-#' rslt <- DF  |> 
-#'   Tbll_likert(
-#'     q1,q2,q3,q4,q5,q6,
-#'     by = ~ sex,
-#'     include.order = TRUE
-#'   )
-#' Summarise_likert(rslt)
-#' 
-#' DF |> 
-#'   Summarise_likert(q1, q2, q3, q4, q5, q6, q7, q8, q9,
-#'               by =~ sex + age,
-#'               grouping = list(
-#'                 FC.2 = c("q1", "q2"),
-#'                 FC.3 = c("q4", "q5", "q6"),
-#'                 FC.4 = c("q7", "q8", "q9")
-#'               )
-#'   )
-Summarise_likert <- 
-  function(x,
-                        ...,
-                        grouping = NULL,
-                        include.order = TRUE,
-                        reverse.levels = FALSE,
-                        decreasing = TRUE,
-                        use.level = NULL
-                        ) {
-  # Hier kommt ein Tbll_likert-Objekt
-  lkt <- attr(x, "plot")
-
-  if (is.null(lkt)) {
-    lkt <- likert_data_sum(x,..., 
-                           use.level = use.level,
-                           reverse.levels = reverse.levels)
-    if (!is.null(grouping)) {
-     # cat("\nin Grouping\n")
-      itm <- grp <- 
-        likert_data_sum(x,..., 
-                        include.label = FALSE, 
-                        use.level = use.level,
-                        reverse.levels = reverse.levels
-                        )$results$Item
-
-      # Schleife duch die unterschiedlich langen labels
-       for (i in seq_along(grouping)) {
-        new_lvl <- names(grouping)[i]
-        for (k in grouping[[i]]) {
-          levels(grp)[levels(grp) == k] <- new_lvl
-        }
-       }
-
-      lkt$results  <-
-        cbind(tibble::tibble(`.Item` = itm, `.grouping` = grp),
-              lkt$results)
-      
-      # um konsistent mit Tbll_Likert zu bleiben
-      if(length (all.names(lkt$formula[3]) ) ==1)
-        lkt$formula <-  Item ~. |.Item + .grouping
-      else
-      lkt$formula <- formula(paste("Item~.|",
-                           paste(
-                             c(all.vars(lkt$formula)[-c(1:2)],
-                                ".Item", ".grouping"), collapse="+")))
-    }
-  }
-
-  param <- all.vars(lkt$formula)[-2]
-
-  lvls <- names(lkt$results)[-seq_along(param)]
-  rhs <- paste0("LBL_", seq_along(lvls))
-  names(lkt$results)[-seq_along(param)] <- rhs
-
-  datl <-
-    tidyr::pivot_longer(
-      lkt$results,
-      cols = all_of(rhs),
-      names_to = "levels",
-      values_to = "Freq"
-    )
-  datl$levels <- factor(datl$levels, labels = lvls)
-
-  if (include.order) {
-    rst <- datl["Item"]
-    rst$order <- as.numeric(datl$levels) * datl$Freq
-
-    rst <- aggregate(
-      order ~ Item,
-      rst,
-      FUN = function(x) mean(x, na.rm = TRUE)
-    )
-
-    datl$Item <- factor(datl$Item,
-                        levels(datl$Item)[order(rst$order,
-                                                decreasing = !decreasing)])
-  }
-
-  datl
-  }
-
-
-#' @export
-#' @rdname Summarise_likert
-Summarise_likert_wide <- function(...){
-  levels<- Freq <- .grouping <- Item <- NULL
-  long_df <- Summarise_likert(...)
-  
-  if( any( names( long_df ) == ".grouping"))
-    long_df[,-1] |>  
-    tidyr::spread(levels , Freq ) |>
-    dplyr::mutate(#.grouping =as.character(.grouping),
-      Item =as.character(Item)
+dummy_likert_data <- 
+  function(n = 2*3*9*3,
+          levels = c(
+                    "Strongly disagree",
+                    "Disagree",
+                    "Neither agree nor disagree",
+                    "Agree",
+                    "Strongly agree"
+                    )){
+ 
+  set.seed(42)
+ 
+  DF_lik <- tibble(
+      q1 = sample(levels, n, replace = TRUE, prob = c(3,2, 1, 4,5)),
+      q2 = sample(levels, n, replace = TRUE, prob = c(3,1, 1, 1,1)),
+      q3 = sample(levels, n, replace = TRUE, prob = c(7,5, 1, 0,0)),
+      q4 = sample(levels, n, replace = TRUE, prob = c(0,0, 0, 1,5)),
+      q5 = sample(levels, n, replace = TRUE, prob = c(1,4, 1, 1,5)),
+      q6 = sample(levels, n, replace = TRUE, prob = c(2,3, 0, 2,3)),
+      q7 = sample(levels, n, replace = TRUE, prob = c(3,2, 0, 1,7)),
+      q8 = sample(levels, n, replace = TRUE, prob = c(1,2, 1, 4,1)),
+      q9 = sample(levels, n, replace = TRUE, prob = c(6,0, 0, 0,6))
     ) |>
-    dplyr::arrange(.grouping)
-  else long_df |>     
-    tidyr::spread(levels , Freq )
-  
-}
-
-#' @export
-#' @rdname Summarise_likert
-Summarise_multi <-
-  function(...,
-           use.level = 1,
-           reverse.levels = FALSE) {
-    Summarise_likert(..., 
-                     use.level = use.level, 
-                     reverse.levels = reverse.levels)
-  }
-
-likert_data_sum  <-function(...,
-                            include.total = FALSE,
-                            use.level = NULL,
-                            reverse.levels = FALSE){
-  rslt <-
-    stp25stat2::Summarise(
-      ...,
-      fun = function(x) {
-        if (is.logical(x)) {
-          x <- factor(x, c(TRUE, FALSE))
-        }
-        else if (is.numeric(x)) {
-          if (any(x > 1))
-            stop("\nWenn Zahlen übergeben werden durfen die nur im Wertebereich von 0 bis 1 liegen!\n")
-          x <- factor(x, 1:0)
-        }
-        
-        if (!is.null(use.level)) {
-          x <- factor(x == levels(x)[use.level], c(TRUE, FALSE))
-        }
-        else if (reverse.levels){
-          x <- rev(x)
-          }
-        
-        table(x, useNA = "no")
-      },
-      key = "Item",
-      margins = include.total
+    mutate(across(everything(), ~ factor(.x, levels = levels))) |>
+    mutate(Sex = factor(sample(c("male", "female"), n, replace = TRUE)),
+           Age = factor(sample(c("18-30", "30-50", ">50"), n, replace = TRUE))) |>
+    stp25tools::Label(
+      # FC.2
+      q1 =  "Nuts Seeds 1",
+      q2 =  "Legumes 2",
+      # FC.3
+      q3 = "Vegetables Juice 3",
+      q4 = "Fruit 4",
+      q5 = "Vegetables 5",
+      #   FC.4
+      q6 = "Milk 6",
+      q7 = "Cheese 7",
+      q8 = "Yoghurt 8",
+      q9 = "Dairy Alternatives  9"
     )
-
-  ncl <- ncol(rslt)
-  col_names <- names(rslt[-ncl])
-  pos_col_names <- grep("Item", col_names)
-
- list(
-   results = rslt,
-    formula =  if (pos_col_names == 1) {Item ~ .}
-    else{formula(paste("Item ~ .|",
-                       paste(col_names[1:(pos_col_names - 1)], collapse = "+")))}
-  )
+    DF_lik$q8[sample.int(n)[seq_len(ceiling (0.02*n))] ] <- NA
+    DF_lik$q9[sample.int(n)[seq_len(ceiling (0.06*n))] ] <- NA
+    DF_lik[c(10,11,1:9)]
 }
+#' @export
+#' @rdname dummy_likert_data
+dummy_multi_data <- function(n=100){
+dat <- dummy_likert_data(n) 
+  
+dat  |>
+  mutate(
+    q1 = as.numeric(q1) > 3,
+    q2 = as.numeric(q2) > 3,
+    q3 = as.numeric(q3) > 3,
+    q4 = as.numeric(q4) > 3,
+    q5 = as.numeric(q5) > 3,
+    q6 = as.numeric(q6) > 3,
+    q7 = as.numeric(q7) > 3,
+    q8 = as.numeric(q8) > 3,
+    q9 = as.numeric(q9) > 3
+  ) |> stp25tools::set_label(stp25tools::get_label(dat))
+}
+
+ 
+
 
