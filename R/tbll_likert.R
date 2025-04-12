@@ -91,8 +91,14 @@ extract_likert <-
         x$freq <- freq
       }
       
-      if (include.na)
+      if (include.na){
         x$freq  <- cbind(x$freq, Missing = x$mean$missing)
+        x$mean$n <-  rowSums(x$freq)
+        }
+      
+      
+      
+      
     }
     
     
@@ -198,11 +204,12 @@ Tbll_likert.likert <- function(x,
                                include.order = FALSE,
                                include.percent = TRUE,
                                include.count = TRUE,
+                               include.total = FALSE,
                                ReferenceZero = include.reference,
                                labels = c("low", "neutral", "high"),
                                decreasing = TRUE, ...) {
 
-
+  if( include.total) warnings("\n Achtung: include.total muss hier bei Summarise_likert() uebergeben werden.\n")
   note <- NULL # für include.reference
   
   if (!is.null(ReferenceZero)) {
