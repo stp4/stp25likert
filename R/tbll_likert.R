@@ -16,6 +16,7 @@ Tbll_likert <- function(...){
   UseMethod("Tbll_likert")
 }
 
+
 extract_likert <-
   function(x,
            include.reference = NULL,
@@ -30,7 +31,7 @@ extract_likert <-
            decreasing = TRUE,
            ...) {
     x <-  attr(x, "tbll")
-    note <- NULL  
+    note <- NULL
     
     if (!is.null(ReferenceZero)) {
       if (is.character(ReferenceZero))
@@ -90,21 +91,17 @@ extract_likert <-
           )
         x$freq <- freq
       }
-      
-      if (include.na){
-        x$freq  <- cbind(x$freq, Missing = x$mean$missing)
-        x$mean$n <-  rowSums(x$freq)
-        }
-      
-      
-      
-      
     }
     
+    # Missing: hier werden die Prozent inclusive der NAs berechnet.
+    if (include.na) {
+      x$freq  <- cbind(x$freq, Missing = x$mean$missing)
+      x$mean$n <-  rowSums(x$freq)
+    }
     
     if (include.percent) {
       if (include.count)
-        x$freq <- 
+        x$freq <-
           stp25stat2:::rndr_percent(x$freq / x$mean$n * 100, x$freq)
       else
         x$freq <-
@@ -113,25 +110,29 @@ extract_likert <-
       x$freq <- ""
     }
     
-    if (include.n) 
+    if (include.n)
       x$freq <- cbind(n = x$mean$n, x$freq)
     
-    if (include.mean) 
+    if (include.mean)
       x$freq <- cbind(x$freq, 
-                      'M(SD)' = stp25stat2:::rndr_mean(x$mean$m, x$mean$sd))
+                      'M(SD)' = 
+                        stp25stat2:::rndr_mean(x$mean$m, x$mean$sd))
     
     ans <- cbind(x$names, x$freq)
     
-    if (include.order) 
+    if (include.order){
       ans <- ans[order(x$mean$m, decreasing = decreasing), ]
-    
+      if( any(ans[[1]] %in% "Total")){
+        pos_total <- which( ans[[1]] %in% "Total")
+           ans <- ans[c(seq_len(nrow(ans))[-pos_total], pos_total),]
+      }
+    }
     
     stp25stat2::prepare_output(ans,
                                caption = "Likert",
                                note = note,
                                N = x$N)
   }
-
 
 
 
@@ -142,6 +143,7 @@ extract_likert <-
 #'  Neutrales Element in Kombination mit
 #'  labels = c("low", "neutral", "high")
 #' @param include.mean,include.n,include.na Zusatz Ergebnisse
+#' @param include.na logical. Missing: hier werden die Prozent inclusive der NAs berechnet.
 #' @param include.order,decreasing sortierung nach mittelwert
 #' @param include.percent,include.count Format Prozent/Anzahl
 #

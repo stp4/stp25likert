@@ -38,6 +38,7 @@ Tbll_likert(...)
   include.order = FALSE,
   include.percent = TRUE,
   include.count = TRUE,
+  include.total = FALSE,
   ReferenceZero = include.reference,
   labels = c("low", "neutral", "high"),
   decreasing = TRUE,
@@ -66,6 +67,8 @@ include.reference = 2.5 (zwei Gruppen)
  labels = c("low", "neutral", "high")}
 
 \item{include.mean, include.n, include.na}{Zusatz Ergebnisse}
+
+\item{include.na}{logical. Missing: hier werden die Prozent inclusive der NAs berechnet.}
 
 \item{include.order, decreasing}{sortierung nach mittelwert}
 
