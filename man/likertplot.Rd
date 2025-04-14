@@ -82,7 +82,7 @@ sex Item Strongly Neither Agree}
 
 \item{auto.key, columns, space}{columns = 2,}
 
-\item{wrap}{Zeien Umbrechen farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)}
+\item{wrap}{Zeien Umbrechen}
 
 \item{positive.order}{das nicht verwenden!! - wird ueber Tbll_likert oder include.order = TRUE gesteuert.}
 }

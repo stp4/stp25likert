@@ -11,7 +11,7 @@
 #' sex Item Strongly Neither Agree
 #' @param main,ylab,sub,xlab Beschriftung
 #' @param col HH::brewer.pal.likert
-#' @param wrap Zeien Umbrechen farbe("likert.blue.red", data$nlevels, middle = ReferenceZero)
+#' @param wrap Zeien Umbrechen 
 #' @param rightAxis,as.percent,ReferenceZero,reference.line.col,col.strip.background
 #' an HH:::plot.likert.formula
 #' @param include.order,decreasing logical or character, Sortieren der Items
@@ -306,22 +306,18 @@ likertplot.default <-
       
   data[[items]] <- as.character(data[[items]])   
   
-  cat("\n grouping", grouping)
+#  cat("\n grouping", grouping)
    if(  grouping  )   data <- plyr::arrange(data, .grouping) 
   } 
     
+    if (is.logical(wrap))
+      if (wrap)
+        wrap <- 35
     
+    if (is.numeric(wrap)) 
+      data[[items]] <-
+        stp25tools::wrap_string(data[[items]], wrap)
     
-  # if (is.logical(wrap)) {
-  #     if (wrap) {
-  #       data[[items]] <-
-  #         stp25tools::wrap_factor(data[[items]], 35)
-  #     }
-  #   }
-  # else if (is.numeric(wrap)) {
-  #     data[[items]] <-
-  #       stp25tools::wrap_factor(data[[items]], wrap)
-  #   }
 
     
     
