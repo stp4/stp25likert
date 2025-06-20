@@ -30,108 +30,114 @@ extract_likert <-
            labels = c("low", "neutral", "high"),
            decreasing = TRUE,
            ...) {
-    x <-  attr(x, "tbll")
+    
+    rslt <-  attr(x, "tbll")
+    
     note <- NULL
     
     if (!is.null(ReferenceZero)) {
       if (is.character(ReferenceZero))
-        ReferenceZero <- which(x$levels %in% ReferenceZero)
+        ReferenceZero <- which(rslt$levels %in% ReferenceZero)
       else if (!is.numeric(ReferenceZero))
-        ReferenceZero <- median(seq_len(x$nlevels))
+        ReferenceZero <- median(seq_len(rslt$nlevels))
       
       if (ceiling(ReferenceZero) == floor(ReferenceZero)) {
         lowrange <- seq_len((ReferenceZero - 1))
         neutral <- ReferenceZero
-        highrange <- (ReferenceZero + 1):x$nlevels
+        highrange <- (ReferenceZero + 1):rslt$nlevels
         
         freq <- cbind(
-          lowrange =  RowSums2(x$freq[, lowrange]),
-          neutral =   x$freq[, neutral],
-          highrange = RowSums2(x$freq[, highrange])
+          lowrange =  RowSums2(rslt$freq[, lowrange]),
+          neutral =   rslt$freq[, neutral],
+          highrange = RowSums2(rslt$freq[, highrange])
         )
         if (is.null(note))
           note <-
           paste(
             "lowrange:",
-            paste(x$levels[lowrange], "\n", collapse = "|"),
+            paste(rslt$levels[lowrange], "\n", collapse = "|"),
             "neutral:",
-            paste(x$levels[neutral], "\n", collapse = "|"),
+            paste(rslt$levels[neutral], "\n", collapse = "|"),
             "highrange:",
-            paste(x$levels[highrange], collapse = "|")
+            paste(rslt$levels[highrange], collapse = "|")
           )
         
         colnames(freq) <-
           c(
             paste0(labels[1], "(1:", ReferenceZero - 1, ")"),
             paste0(labels[2], "(", ReferenceZero, ")"),
-            paste0(labels[3], "(", ReferenceZero + 1, ":", x$nlevels, ")")
+            paste0(labels[3], "(", ReferenceZero + 1, ":", rslt$nlevels, ")")
           )
         
-        x$freq <- freq
+        rslt$freq <- freq
         
       } else{
         lowrange <- seq_len(floor(ReferenceZero))
-        highrange <- ceiling(ReferenceZero):x$nlevels
+        highrange <- ceiling(ReferenceZero):rslt$nlevels
         
         freq <-
-          cbind(lowrange =  RowSums2(x$freq[, lowrange]),
-                highrange = RowSums2(x$freq[, highrange]))
+          cbind(lowrange =  RowSums2(rslt$freq[, lowrange]),
+                highrange = RowSums2(rslt$freq[, highrange]))
         colnames(freq) <-
           c(
             paste0(labels[1], "(1:", floor(ReferenceZero), ")"),
-            paste0(labels[3], "(", ceiling(ReferenceZero), ":", x$nlevels, ")")
+            paste0(labels[3], "(", ceiling(ReferenceZero), ":", rslt$nlevels, ")")
           )
         if (is.null(note))
           note <-
           paste(
             "lowrange:",
-            paste(x$levels[lowrange], "\n", collapse = "|"),
+            paste(rslt$levels[lowrange], "\n", collapse = "|"),
             "highrange:",
-            paste(x$levels[highrange], collapse = "|")
+            paste(rslt$levels[highrange], collapse = "|")
           )
-        x$freq <- freq
+        rslt$freq <- freq
       }
     }
     
     # Missing: hier werden die Prozent inclusive der NAs berechnet.
     if (include.na) {
-      x$freq  <- cbind(x$freq, Missing = x$mean$missing)
-      x$mean$n <-  rowSums(x$freq)
+      rslt$freq  <- cbind(rslt$freq, Missing = rslt$mean$missing)
+      rslt$mean$n <-  rowSums(rslt$freq)
     }
     
     if (include.percent) {
       if (include.count)
-        x$freq <-
-          stp25stat2:::rndr_percent(x$freq / x$mean$n * 100, x$freq)
+        rslt$freq <-
+          stp25stat2:::rndr_percent(rslt$freq / rslt$mean$n * 100, rslt$freq)
       else
-        x$freq <-
-          stp25stat2:::rndr_percent(x$freq / x$mean$n * 100)
+        rslt$freq <-
+          stp25stat2:::rndr_percent(rslt$freq / rslt$mean$n * 100)
     } else if (!include.count) {
-      x$freq <- ""
+      rslt$freq <- ""
     }
     
     if (include.n)
-      x$freq <- cbind(n = x$mean$n, x$freq)
+      rslt$freq <- cbind(n = rslt$mean$n, rslt$freq)
     
     if (include.mean)
-      x$freq <- cbind(x$freq, 
+      rslt$freq <- cbind(rslt$freq, 
                       'M(SD)' = 
-                        stp25stat2:::rndr_mean(x$mean$m, x$mean$sd))
+                        stp25stat2:::rndr_mean(rslt$mean$m, rslt$mean$sd))
     
-    ans <- cbind(x$names, x$freq)
+    ans <- cbind(rslt$names, rslt$freq)
     
     if (include.order){
-      ans <- ans[order(x$mean$m, decreasing = decreasing), ]
+      ans <- ans[order(rslt$mean$m, decreasing = decreasing), ]
       if( any(ans[[1]] %in% "Total")){
         pos_total <- which( ans[[1]] %in% "Total")
            ans <- ans[c(seq_len(nrow(ans))[-pos_total], pos_total),]
       }
     }
     
+  ans <-
     stp25stat2::prepare_output(ans,
                                caption = "Likert",
                                note = note,
-                               N = x$N)
+                               N = rslt$N)
+  attr(ans, "tbll_likert") <- x
+  ans
+  
   }
 
 
@@ -171,8 +177,9 @@ Tbll_likert.data.frame <-
             labels = c("low", "neutral", "high"),
             reverse.levels = FALSE,
             reorder.levels = NA) {
+     
   if (is.null(attr(x, "likert"))) {
-    x <- Summarise_likert(
+    rslt <- Summarise_likert(
       x,...,
       reverse.levels = reverse.levels,
       reorder.levels = reorder.levels,
@@ -180,8 +187,9 @@ Tbll_likert.data.frame <-
       exclude.levels = exclude.levels
     )
   }
+     
   extract_likert(
-    x,
+    rslt,
     ReferenceZero = ReferenceZero,
     include.mean = include.mean,
     include.n = include.n,

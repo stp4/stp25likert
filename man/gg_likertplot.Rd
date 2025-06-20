@@ -66,7 +66,7 @@ likert_stacked(
 \arguments{
 \item{data}{data.frame im long Format}
 
-\item{include.order, decreasing}{logical.  die Sortierung}
+\item{include.order, decreasing}{character. include.order = c("right", "left")  die Sortierung}
 
 \item{include.reference, cutoff}{numeric. Referenzline}
 

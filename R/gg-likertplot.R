@@ -6,7 +6,7 @@
 #' @param ... not used
 #' @param data  data.frame im long Format
 #' @param include.reference,cutoff numeric. Referenzline
-#' @param include.order,decreasing logical.  die Sortierung
+#' @param include.order,decreasing character. include.order = c("right", "left")  die Sortierung
 #' @param as.percent  logical. ggstats
 #' @param exclude_fill_values  character. ggstats
 #' @param reverse_likert logical.  ggstats nicht zu Verwenden Balken umdrehen gethaber nicht für die Beschriftung
@@ -53,6 +53,10 @@ gg_likertplot <-
            direction = 1,...
   ) {
 
+    if(!is.null( attr(data, "tbll_likert") )) {
+      stop("\nDas habe ich noch nicht fertig verwende einfach Summarise_likert(!!!\n")
+    }
+    
     if (is.null(attr(data, "tbl")))
       data <- Summarise_likert_long(data, x, ...)
     
@@ -209,6 +213,11 @@ gg_likert_stacked <-
            ...
            
   ) {
+    
+    if(!is.null( attr(data, "tbll_likert") )) {
+      stop("\nDas habe ich noch nicht fertig verwende einfach Summarise_likert(!!!\n")
+    }
+    
     
     if (is.null(attr(data, "tbl")))
       data <- Summarise_likert_long(data, x, ...)

@@ -116,19 +116,38 @@ likertplot <- function(...){
 #' @rdname likertplot
 #' @export
 likertplot.data.frame <- function(
-    data, formula=NULL, include.reference = NULL,
-    
+    data, 
+    formula = NULL, 
+    include.reference = NULL,
     include.total = FALSE,
     use.level = NULL,
     reverse.levels = FALSE, #nur mit Langen Daten
     nlevels = NULL,
     m_weight =NULL,
-    groups=NULL,ReferenceZero = include.reference,
+    groups = NULL, 
+    ReferenceZero = include.reference,
     ...
 ){
   
-#cat("\n in likertplot.data.frame\n")
-  # test data.format
+  
+  if(!is.null( attr(data, "tbll_likert") )) return(
+    
+   likertplot(attr(data, "tbll_likert"),
+      formula = formula, 
+      include.reference = include.reference,
+      include.total = include.total,
+      use.level = use.level,
+      reverse.levels = reverse.levels,  
+      nlevels = nlevels,
+      m_weight = m_weight,
+      groups = groups, 
+      ReferenceZero = ReferenceZero,
+      ...
+    )
+  )
+  
+# cat("\n in likertplot.data.frame\n")
+# test data.format
   if (!is.null(attr(data, "likert"))) {
     if (!is.null(formula) & !attr(data, "likert") == "wide") {
       if (length(all.vars(formula[-3])) > 1) {
@@ -314,9 +333,10 @@ likertplot.default <-
       if (wrap)
         wrap <- 35
     
+    # Bedarf noch einer ueberarbeitung da Factoren oder character fehler verursachen
     if (is.numeric(wrap)) 
       data[[items]] <-
-        stp25tools::wrap_string(data[[items]], wrap)
+        stp25tools::wrap_string(as.character(data[[items]]), wrap)
     
 
     

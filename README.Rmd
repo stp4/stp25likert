@@ -86,6 +86,33 @@ Likert |>
 ```
 
 
+### einfache Alternative
+
+```{r}
+
+require(tinyplot)
+
+Likert |>
+  Summarise_likert_long(q1, q2, q3, q4, 
+                        include.total = TRUE, 
+                        by =  ~ Sex) -> lidata
+
+tinyplot(
+  Freq ~ Item | levels,
+  facet = ~ Sex,
+  data = lidata,
+  type = "barplot",
+  center = 1,
+  flip = TRUE,
+  facet.args = list(ncol = 3),
+  # yaxl = "percent",
+  xlab = ""
+)
+
+```
+
+
+
 ### Händich mit ggplot
 
 ```{r ggplot-2, fig.height=2.5, fig.width=7}
