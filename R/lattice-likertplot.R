@@ -296,8 +296,8 @@ likertplot.default <-
            horizontal = TRUE,
            par.settings  = NULL,
            wrap = TRUE,
-         # obsolet
-          positive.order = NULL,
+           # obsolet
+           positive.order = NULL,
      
            ...) {
     
@@ -459,8 +459,7 @@ likertplot.default <-
 #' @import lattice
 #' @export
 #' 
-likert_stacked <-
-  function(data,
+likert_stacked <- function(data,
            x = NULL,
            include.order = FALSE,
            decreasing = FALSE,
@@ -477,13 +476,16 @@ likert_stacked <-
            columns = 2,
            space = "top",
            #  between = list(x = 1 + (horizontal), y = 0.5 + 2 * (!horizontal)),
-           auto.key = list(space = space, columns = columns, between = 1),
+           auto.key = list(space = space, 
+                           columns = columns, 
+                           between = 1),
            
            # reference.line.col = "gray65",
            #  col.strip.background = "gray97",
            #  horizontal = TRUE,
            par.settings  = NULL,
            ...) {
+    
     if (is.null(attr(data, "tbl")))
       data <- Summarise_likert_long(data, x, ...)
     
@@ -503,7 +505,7 @@ likert_stacked <-
       data <- attr(data, "data_long")
     
     if (is.null(x))
-      x <-  attr(mmm, "tbll")$formula
+      x <-  attr(data, "tbll")$formula
     
     if (length(all.names(x)) == 3) {
       x <- reformulate("Freq", x[[2]])

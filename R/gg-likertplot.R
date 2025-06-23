@@ -3,18 +3,18 @@
 #' 
 #' 
 #' @param reverse_fill  logical.
-#' @param ... not used
+#' 
 #' @param data  data.frame im long Format
+#' @param facet_formula formula. ggplot NULL or formula Item ~ .
 #' @param include.reference,cutoff numeric. Referenzline
 #' @param include.order,decreasing character. include.order = c("right", "left")  die Sortierung
 #' @param as.percent  logical. ggstats
 #' @param exclude_fill_values  character. ggstats
 #' @param reverse_likert logical.  ggstats nicht zu Verwenden Balken umdrehen gethaber nicht für die Beschriftung
 #' @param width numeric.  ggstats breite der Balken 
-#' @param facet_formula formula. ggplot
 #' @param y_label_wrap,facet_label_wrap ggstats numeric. Umbrechen der Labels
 #' @param palette,direction scharacter. ggstats  scale_fill_brewer  direction = 1 or -1
-#'
+#' @param ... to Summarise_likert()
 #' @import ggplot2
 #' @import ggstats
 #' @export
@@ -34,9 +34,11 @@
 #'   gg_likertplot()
 #' 
 gg_likertplot <-
-  function(data, x, 
-           include.order =NULL, decreasing=FALSE, 
-           include.reference =NULL, 
+  function(data, ...,
+           facet_formula = NULL,
+           include.order = NULL, 
+           decreasing = FALSE, 
+           include.reference = NULL, 
            
            #variable_labels = NULL,
            as.percent = TRUE,
@@ -44,21 +46,21 @@ gg_likertplot <-
            y_label_wrap = 50,
            reverse_likert = FALSE,
            width = .90,
-           facet_formula = NULL,
+           
            facet_label_wrap = 50,
            
-          
            cutoff  =include.reference,
-           palette = "RdBu", # scale_fill_brewer"BrBG"
-           direction = 1,...
+           palette = "RdBu", direction = 1
+          
   ) {
 
     if(!is.null( attr(data, "tbll_likert") )) {
       stop("\nDas habe ich noch nicht fertig verwende einfach Summarise_likert(!!!\n")
     }
-    
+ 
+    # data muss in folge ein likert-long- data.frame sein
     if (is.null(attr(data, "tbl")))
-      data <- Summarise_likert_long(data, x, ...)
+      data <- Summarise_likert_long(data, ...)
     
     col_wrap <- attr(data, "tbll")$columns
     grouping <- attr(data, "tbll")$grouping
@@ -72,9 +74,7 @@ gg_likertplot <-
         decreasing = decreasing
       )
     
-    if (attr(data, "likert") == "wide")
-      data <- attr(data, "data_long")
-    
+
 
     if (is.null(facet_formula)) {
       if (grouping) {
@@ -107,6 +107,12 @@ gg_likertplot <-
           stop("Hier muss facet_formula = a ~ b + c mit uebergeben werden!")
         }
       }
+    }
+    
+    
+    if (attr(data, "likert") == "wide") {
+      data <- attr(data, "data_long")
+     # attr(data, "likert") <- "long"
     }
     
     p <-
@@ -151,7 +157,9 @@ gg_likertplot <-
     }
     
    # if (nlevels(data$levels) <= 11) 
-    p <- p + scale_fill_brewer(palette = palette, direction = direction)
+    if(!is.null(palette))
+    p <- p + 
+      scale_fill_brewer(palette = palette, direction = direction)
 
     p <- p +
       scale_y_discrete(labels = scales::label_wrap(y_label_wrap)) +
@@ -172,7 +180,7 @@ gg_likertplot <-
   }
 
 #' @rdname gg_likertplot
-#'
+#' 
 #' @param add_labels logical. gg_likert_stacked
 #' @param labels_size numeric. gg_likert_stacked
 #' @param labels_color character. gg_likert_stacked
@@ -187,11 +195,13 @@ gg_likertplot <-
 #' 1+1
 #' 
 gg_likert_stacked <- 
-  function(data, x, 
-           include.order = FALSE, decreasing=FALSE,
+  function(data, 
+           facet_formula = NULL, 
+           include.order = FALSE, decreasing = FALSE,
+           palette = "RdBu", direction = 1,
            
            include.value = TRUE,
-           facet_formula = x,
+
            facet_label_wrap = 50,
            # include = dplyr::everything(),
            # weights = NULL,
@@ -224,15 +234,20 @@ gg_likert_stacked <-
     
     col_wrap <- attr(data, "tbll")$columns
     grouping <- attr(data, "tbll")$grouping
-    fm <- attr(data, "tbll")$formula
-    
-    if (!is.null(include.order))
+    # fm <- attr(data, "tbll")$formula
+  
+    if (is.null(facet_formula)){
+      facet_formula <- attr(data, "tbll")$facet_formula
+    }
+      cat( "\facet_formula: ")
+     print(facet_formula)
+    if (!is.null(include.order)){
       data <- order_weighted_mean(
         data,
         ReferenceZero = NULL,
         include.order = include.order,
         decreasing = decreasing
-      )
+      )}
     
     if (attr(data, "likert") == "wide")
       data <- attr(data, "data_long")
@@ -251,7 +266,7 @@ gg_likert_stacked <-
         stat = StatProp,
         complete = "fill",
         width = width
-      )+
+      ) +
       labs(x = NULL, y = NULL, fill = NULL) +
       scale_y_continuous(labels = label_percent_abs())
     
@@ -286,8 +301,7 @@ gg_likert_stacked <-
     #labels = scales::label_wrap(y_label_wrap)
     #                  ) +
     
-    
-    #  print(facet_formula)
+ 
     if (!is.null(facet_formula))
       p <-  p + facet_grid(
         facet_formula,
@@ -303,7 +317,9 @@ gg_likert_stacked <-
       )
     # 
     # if (length(levels(data$.answer)) <= 11) {
-    p <- p + scale_fill_brewer(palette = "BrBG")
+    if(!is.null(palette))
+      p <- p + 
+      scale_fill_brewer(palette = palette, direction = direction)
     # }
     
     p + coord_flip()
