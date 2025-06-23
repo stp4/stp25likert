@@ -28,12 +28,12 @@ Likert |>
   kable(caption =" Likert-Skale")
 ```
 
-| Item             | low(1:2) | high(3:5) | M(SD)       |
-|:-----------------|:---------|:----------|:------------|
-| Nuts Seeds       | 34% (55) | 66% (107) | 3.51 (1.46) |
-| Legumes          | 30% (48) | 70% (114) | 3.30 (1.12) |
-| Vegetables Juice | 25% (41) | 75% (121) | 3.20 (1.47) |
-| Fruit            | 54% (88) | 46% (74)  | 2.87 (1.56) |
+| Item               | low(1:2)  | high(3:5)  | M(SD)       |
+|:-------------------|:----------|:-----------|:------------|
+| Nuts Seeds 1       | 38% (62)  | 62% (100)  | 3.15 (1.58) |
+| Legumes 2          | 65% (106) | 35% (56)   | 2.11 (1.39) |
+| Vegetables Juice 3 | 92% (149) | 8% (13)    | 1.51 (0.64) |
+| Fruit 4            | . (0)     | 100% (162) | 4.86 (0.34) |
 
 Likert-Skale
 
@@ -46,12 +46,12 @@ Likert |>
 ```
 
     ## # A tibble: 4 × 6
-    ##   Item             `Strongly disagree` Disagree Neither agree nor disagr…¹ Agree
-    ##   <fct>                          <int>    <int>                      <int> <int>
-    ## 1 Nuts Seeds                        19       36                         10    38
-    ## 2 Legumes                            0       48                         52    27
-    ## 3 Vegetables Juice                  41        0                         46    36
-    ## 4 Fruit                             42       46                          0    39
+    ##   Item               `Strongly disagree` Disagree Neither agree nor disa…¹ Agree
+    ##   <fct>                            <int>    <int>                    <int> <int>
+    ## 1 Nuts Seeds 1                        42       20                       16    39
+    ## 2 Legumes 2                           83       23                       30     7
+    ## 3 Vegetables Juice 3                  92       57                       13     0
+    ## 4 Fruit 4                              0        0                        0    22
     ## # ℹ abbreviated name: ¹​`Neither agree nor disagree`
     ## # ℹ 1 more variable: `Strongly agree` <int>
 
@@ -61,12 +61,29 @@ Multi |>
 ```
 
     ## # A tibble: 4 × 3
-    ##   Item                  `1`   `0`
-    ##   <fct>               <int> <int>
-    ## 1 "Nuts.Seeds"           55    45
-    ## 2 "Legumes"              46    54
-    ## 3 "Vegetables Juice "    70    30
-    ## 4 "Fruit"                57    43
+    ##   Item               `TRUE` `FALSE`
+    ##   <fct>               <int>   <int>
+    ## 1 Nuts Seeds 1           54      46
+    ## 2 Legumes 2              39      61
+    ## 3 Vegetables Juice 3      0     100
+    ## 4 Fruit 4               100       0
+
+``` r
+Multi |>
+  Summarise_multi(q1, q2, q3, q4) 
+```
+
+    ## # A tibble: 8 × 3
+    ##   Item               levels  Freq
+    ##   <fct>              <fct>  <int>
+    ## 1 Nuts Seeds 1       TRUE      54
+    ## 2 Nuts Seeds 1       FALSE     46
+    ## 3 Legumes 2          TRUE      39
+    ## 4 Legumes 2          FALSE     61
+    ## 5 Vegetables Juice 3 TRUE       0
+    ## 6 Vegetables Juice 3 FALSE    100
+    ## 7 Fruit 4            TRUE     100
+    ## 8 Fruit 4            FALSE      0
 
 ## Klassiker Plot mit der HH Library
 
@@ -86,31 +103,63 @@ Likert |>
 
 ![](README_files/figure-gfm/likert-plot-1-1.png)<!-- -->
 
-### Händich mit ggplot
+### gglikert_stacked mit likert_data und multi_data
 
 ``` r
-require(ggplot2)
-require(ggstats)
-Multi |>
-  Summarise_likert_long(q1, q2, q3, q4) |>
-  ggplot() +
-  aes(
-    x = Item,
-    fill = levels,
-    weight = Freq,
-    by = Item
-  ) +
-  geom_bar(position = "fill") +
-  scale_fill_brewer(palette = "BrBG", direction  = 1) +
-  geom_text(
-    aes(label = scales::percent(after_stat(prop), accuracy = 1)),
-    stat = "prop", position = position_fill(.5)) +
-  coord_flip()
+Likert |>
+  Summarise_likert(q1,q2,q3,q4,q5,q6,q7,q8,q9,
+                    by =~ Sex,
+                   grouping = list(
+                     FC.2 = c("q1", "q9", "q2", "q5"),
+                     FC.3 = c("q3", "q4", "q6"),
+                     FC.4 = c("q7", "q8")
+                   )) -> li_data
+
+
+li_data |> 
+  gg_likertplot( direction = -1)
 ```
 
-![](README_files/figure-gfm/ggplot-2-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-### gglikert_stacked mit likert_data und multi_data
+``` r
+li_data |> 
+  gg_likertplot( palette = NULL ) -> d 
+  
+
+#' Farben koennen auch mit den levels benannt werden um Fehlerfrei die Zuordnung zu erstellen.
+my_col <- likert_col()
+names(my_col ) <- attr(li_data, "tbll")$measure
+my_col
+```
+
+    ##          Strongly disagree                   Disagree 
+    ##                  "#FC9272"                  "#FEE0D2" 
+    ## Neither agree nor disagree                      Agree 
+    ##                   "gray90"                  "#DEEBF7" 
+    ##             Strongly agree 
+    ##                  "#9ECAE1"
+
+``` r
+d + scale_fill_manual(values = my_col)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+#d + scale_fill_manual(values = c( "#FC9272", "#FEE0D2", "green", "#DEEBF7" , "#9ECAE1" ))
+#'  Diverging
+#'   BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
+# d + scale_fill_brewer(palette="RdGy")
+ d + scale_fill_grey(start = 0.8, end = 0.3) + theme_bw()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
+
+``` r
+# d + scale_fill_hue()
+# d + scale_fill_viridis_d()
+```
 
 Neue Funktion `gg_likert_stacked()` diese habe die ich von Joseph
 Larmarange gestohlern - siehe orginale Funktion unten.
@@ -129,53 +178,95 @@ Multi |>
       FC.5 = c("q7", "q8", "q9")
     )
   ) |>
-  gg_likert_stacked(
-    .grouping ~ Sex) +
+  gg_likert_stacked(.grouping ~ Sex) +
 #  theme_bw() +
   theme(strip.text.y = element_text(angle = 0))
 ```
 
-    ## .grouping ~ Sex
+    ## acet_formula: .grouping ~ Sex
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-
-``` r
-  Likert |>
-    Summarise_likert(
-      q1,q2,q3,q4,q5,q6,q7,q8,q9,
-      by =  ~ Sex + Age,
-      grouping = list(
-        FC.2 = c("q1", "q2"),
-        FC.3 = "q3",
-        FC.4 =  c("q4", "q5", "q6"),
-        FC.5 = c("q7", "q8", "q9")
-      ),
-      include.order = TRUE
-    ) 
-```
-
-    ## # A tibble: 54 × 9
-    ##    .grouping Sex    Age   Item             `Strongly disagree` Disagree
-    ##    <fct>     <fct>  <fct> <fct>                          <int>    <int>
-    ##  1 FC.2      female >50   Nuts Seeds                         1        5
-    ##  2 FC.2      female 18-30 Nuts Seeds                         6        9
-    ##  3 FC.2      female 30-50 Nuts Seeds                         6        7
-    ##  4 FC.2      female >50   Legumes                            0        5
-    ##  5 FC.2      female 18-30 Legumes                            0       17
-    ##  6 FC.2      female 30-50 Legumes                            0        6
-    ##  7 FC.3      female >50   Vegetables Juice                   8        0
-    ##  8 FC.3      female 18-30 Vegetables Juice                   9        0
-    ##  9 FC.3      female 30-50 Vegetables Juice                   4        0
-    ## 10 FC.4      female >50   Fruit                             10        9
-    ## # ℹ 44 more rows
-    ## # ℹ 3 more variables: `Neither agree nor disagree` <int>, Agree <int>,
-    ## #   `Strongly agree` <int>
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
-#' Das ist eine Kopie von ggstats::gglikert wobei default Einstellungen geändert sind
-#' und vor allem die anpassung an meine Summarise_likert() Funktion
+Likert |>
+  Summarise_likert(q1,q2,q3,q4,q5,q6,q7,q8,q9,
+                   # by =~ sex,
+                   grouping = list(
+                     FC.2 = c("q1", "q9", "q2", "q5"),
+                     FC.3 = c("q3", "q4", "q6"),
+                     FC.4 = c("q7", "q8")
+                   )) |>  
+  mutate(Item= as.character(Item) )|>
+     plyr::arrange(.grouping)  |>
+  likertplot(
+    Item ~ . | .grouping,
+    scales = list(y = list(relation = "free")),
+    layout = c(1, 3),
+    between = list(y = 0),
+    strip = FALSE,
+    strip.left = lattice::strip.custom(bg = "gray97"),
+    par.strip.text = list(cex = .8, lines = 5),
+    main = "Ernärung",
+    ylab = NULL,
+    wrap = FALSE
+  )
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Quelle: Bibliothek ‘ggstats’
 
 <https://github.com/larmarange/ggstats>
+
+### einfache Alternative
+
+``` r
+require(tinyplot)
+```
+
+    ## Loading required package: tinyplot
+
+``` r
+Likert |>
+  Summarise_likert_long(q1, q2, q3, q4, 
+                        include.total = TRUE, 
+                        by =  ~ Sex) -> lidata
+
+tinyplot(
+  Freq ~ Item | levels,
+  facet = ~ Sex,
+  data = lidata,
+  type = "barplot",
+  center = 1,
+  flip = TRUE,
+  facet.args = list(ncol = 3),
+  # yaxl = "percent",
+  xlab = ""
+)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+### Händich mit ggplot
+
+``` r
+require(ggplot2)
+require(ggstats)
+Multi |>
+  Summarise_multi_long(q1, q2, q3, q4) |>
+  ggplot() +
+  aes(
+    x = Item,
+    fill = levels,
+    weight = Freq,
+    by = Item
+  ) +
+  geom_bar(position = "fill") +
+  scale_fill_brewer(palette = "BrBG", direction  = 1) +
+  geom_text(
+    aes(label = scales::percent(after_stat(prop), accuracy = 1)),
+    stat = "prop", position = position_fill(.5)) +
+  coord_flip()
+```
+
+![](README_files/figure-gfm/ggplot-2-1.png)<!-- -->
