@@ -161,7 +161,7 @@ d + scale_fill_manual(values = my_col)
 # d + scale_fill_viridis_d()
 ```
 
-Neue Funktion `gg_likert_stacked()` diese habe die ich von Joseph
+Neue Funktion `gg_likert_stacked()` - diese habe die ich von Joseph
 Larmarange gestohlern - siehe orginale Funktion unten.
 
 ``` r

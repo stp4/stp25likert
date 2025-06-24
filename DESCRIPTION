@@ -1,10 +1,10 @@
 Package: stp25likert
 Type: Package
 Title: Analysis of Likert-type items.
-Version: 1.0.0
-Date: 01-12-2024
+Version: 1.0.1
+Date: 23-06-2025
 Authors@R: person("Wolfgang", "Peter", email = "w.peter@statistik-peter.at",  role = c("aut", "cre"))
-Description: The purpose of stp25stat2 is to facilitate work and provide functions for creating statistical evaluation tables.
+Description: The purpose of stp25likert is to make work easier by providing functions for creating Likert tables and plots.
 License: GPL-3 
 Encoding: UTF-8
 LazyData: true
