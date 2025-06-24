@@ -6,12 +6,27 @@
 #' @export
 #'
 #' @examples
-#'
+#' #
 #' Likert <- dummy_likert_data(245)
-#' Likert |> Tbll_likert(q1, q2, q3,
-#'                       by = ~ Sex,
-#'                       include.order=TRUE)
-#'                       
+#' 
+#' Likert |>
+#'   Tbll_likert(q1, q2, q3, q4, by = ~ Sex, include.order = TRUE)
+#' 
+#' Likert |>
+#'   Tbll_likert(q1, q2, q3, q4, include.order = TRUE)
+#' 
+#' Likert |>
+#'   Tbll_likert(q1,
+#'               q2,
+#'               q3,
+#'               q4,
+#'               include.percent = FALSE,
+#'               include.mean = FALSE) |>
+#'   stp25output2::Output() |>
+#'   likertplot()
+#'
+#
+#'
 Tbll_likert <- function(...){
   UseMethod("Tbll_likert")
 }
