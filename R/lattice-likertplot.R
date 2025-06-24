@@ -5,7 +5,7 @@
 #'
 #' Die orginale Funktion hat bei der Sortierung (positive.order) einen Fehler.
 #'
-#' @param x formula
+#' @param formula formula   Item ~ . | .grouping
 #' @param data daten
 #' Format tibble (wide)
 #' sex Item Strongly Neither Agree
@@ -19,7 +19,7 @@
 #' @param auto.key,columns,space  columns = 2,
 #' @param ... HH:::plot.likert.formula  between=list(x=0))
 #'
-#' @return lattice Plot
+#' @return  lattice barchart
 #' @export
 #'
 #' @examples
@@ -264,6 +264,11 @@ likertplot.formula <- function(formula, data = NULL, ...) {
 
 #' @rdname likertplot
 #' @export
+#' 
+#'  
+#' @seealso  Orginale Funktion von R. Heiberger \code{\link[HH]{plot.likert}}
+#' 
+#' 
 likertplot.default <-
   function(x,
            data,
@@ -285,7 +290,8 @@ likertplot.default <-
            ylim =NULL, xlim=NULL,
            col = NULL,
            rightAxis = FALSE,
-           as.percent = TRUE,
+           include.percent = TRUE,
+           as.percent = include.percent,
            columns = 2,
            space = "top",
            between = list(x = 1 + (horizontal), y = 0.5 + 2 * (!horizontal)),
@@ -313,7 +319,7 @@ likertplot.default <-
     
   if (!is.null(include.order)) {
       data <- order_weighted_mean(
-        data,x,
+        data, x,
         measure = measure,
         items = items,
         groups = groups,
@@ -337,75 +343,7 @@ likertplot.default <-
     if (is.numeric(wrap)) 
       data[[items]] <-
         stp25tools::wrap_string(as.character(data[[items]]), wrap)
-    
-
-    
-    
-  #  order_weighted_mean
-          
-                         
-  #   if (!is.null(include.order)) {
-  #    
-  #     cat("  aha du wilst also sortieren.\n")
-  #     
-  #  #   print(include.order)
-  #     # include.order vorbereiten es kommt logical oder  "right", "left"
-  #     if (is.character(include.order)) {
-  #       include.order <- match.arg(include.order, c("right", "left"))
-  #       
-  #       if (include.order == "right")
-  #         decreasing <- TRUE
-  #       else if (include.order == "left")
-  #         decreasing <-  FALSE
-  #       include.order <- TRUE
-  #     }
-  #     else if (is.numeric(include.order)) {
-  #       if (nlevels != length(include.order))
-  #         stop(
-  #           "include.order ist die Reihenfolge der Items - muss also exakt gleich lang sein wie die Items!"
-  #         )
-  #       m_weight <- include.order
-  #       include.order <- TRUE
-  #       decreasing <- FALSE
-  #     }
-  #     
-  #     # selber ausrechnen mit ReferenceZero
-  #     if (is.null(m_weight)) {
-  #       m_weight <- seq_len(nlevels)
-  #       if (!is.null(ReferenceZero))
-  #         m_weight[ceiling(ReferenceZero):nlevels] <- nlevels
-  #       m_weight <- colSums(t(data[measure]) * m_weight, na.rm = TRUE)
-  #     }
-  #     
-  #     if (length(groups) > 0)
-  #       m_weight <-
-  #         tapply(
-  #           m_weight,
-  #           data[[items]],
-  #           FUN = function(x) {
-  #             mean(x, na.rm = TRUE)
-  #           }
-  #         )
-  #     else
-  #       names(m_weight) <-
-  #         if (is.factor(data[[items]]))
-  #           levels(data[[items]])
-  #     else
-  #       unique(data[[items]])
-  #     
-  #     
-  # #    print(decreasing)
-  #     print(m_weight)
-  #     
-  #  #   print(names(m_weight)[order(m_weight, decreasing = decreasing)])
-  # ord <-order(m_weight, decreasing = decreasing)
-  #     data[[items]] <-factor(data[[items]], names(m_weight)[ord])
-  #     print( names(m_weight)[ord])
-  #     print(ord)
-  #   #  data<- data[ord,]
-  #   }
- 
-
+  
 
   lattice_plot <-
     HH:::plot.likert.formula(
@@ -455,36 +393,42 @@ likertplot.default <-
 
 
 #' @rdname gg_likertplot
-#' @return ggplot
+#' 
+#' @return lattice barchart
 #' @import lattice
 #' @export
 #' 
-likert_stacked <- function(data,
+#' @param include.percent,margin Prozent darstellen margin = 1 bzw bei Gruppen  margin = 1:2
+#' @param x formula  ~ Freq | Group
+likert_stacked <-
+  function(data,
            x = NULL,
            include.order = FALSE,
+           include.percent = TRUE,
+           margin = 1,
            decreasing = FALSE,
-           
-           
            main = '',
            ylab = "",
            sub = "",
            xlab =   "Freq" ,
-           ylim =NULL, xlim=NULL,
+           ylim = NULL,
+           xlim = NULL,
            col = NULL,
            rightAxis = FALSE,
-           #  as.percent = TRUE,
+           # as.percent = TRUE,
            columns = 2,
            space = "top",
-           #  between = list(x = 1 + (horizontal), y = 0.5 + 2 * (!horizontal)),
-           auto.key = list(space = space, 
-                           columns = columns, 
+           # between = list(x = 1 + (horizontal), y = 0.5 + 2 * (!horizontal)),
+           auto.key = list(space = space,
+                           columns = columns,
                            between = 1),
-           
            # reference.line.col = "gray65",
            #  col.strip.background = "gray97",
            #  horizontal = TRUE,
            par.settings  = NULL,
            ...) {
+    if (!is.null(attr(data, "tbll_likert")))
+      data <-  attr(data, "tbll_likert")
     
     if (is.null(attr(data, "tbl")))
       data <- Summarise_likert_long(data, x, ...)
@@ -507,6 +451,15 @@ likert_stacked <- function(data,
     if (is.null(x))
       x <-  attr(data, "tbll")$formula
     
+    
+    if (include.percent) {
+      fm <- all.vars(x)
+      fm <-  paste(fm[-which(fm == ".")], collapse = "+")
+      fm <- formula(paste("Freq ~" , fm, "+ levels"))
+      data <- as.data.frame(prop.table(xtabs(fm, data), margin = 1))
+      data$Freq <- data$Freq * 100
+      xlab <- "Percent"
+    }
     if (length(all.names(x)) == 3) {
       x <- reformulate("Freq", x[[2]])
     } else{
@@ -516,16 +469,19 @@ likert_stacked <- function(data,
     if (nlevels < 3)
       nlevels <- 3
     
-    if (!grouping)
+    
+    if (!grouping) {
       barchart(
         x,
         data,
         groups = levels,
+        main = main,
+        xlab = xlab,
         stack = TRUE,
         border = NULL,
         col = RColorBrewer::brewer.pal(nlevels, "BrBG")
       )
-    
+    }
     else {
       ngr <-  length(attr(data, "tbll")$groups)
       ngr2 <- length(unique(data$.grouping))
@@ -533,6 +489,8 @@ likert_stacked <- function(data,
         x,
         data,
         groups = levels,
+        main = main,
+        xlab = xlab,
         stack = TRUE,
         border = NULL,
         col =  if (is.null(col))
@@ -542,16 +500,9 @@ likert_stacked <- function(data,
         scales = list(y = list(relation = "free")),
         layout = c(ngr, ngr2),
         between = list(y = 0)
-        
       )
-      
-      
-      
-      
     }
-    
   }
-
  
 #' likert_col
 #'
