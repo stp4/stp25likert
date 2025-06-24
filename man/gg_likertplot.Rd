@@ -8,7 +8,8 @@
 \usage{
 gg_likertplot(
   data,
-  x,
+  ...,
+  facet_formula = NULL,
   include.order = NULL,
   decreasing = FALSE,
   include.reference = NULL,
@@ -17,21 +18,20 @@ gg_likertplot(
   y_label_wrap = 50,
   reverse_likert = FALSE,
   width = 0.9,
-  facet_formula = NULL,
   facet_label_wrap = 50,
   cutoff = include.reference,
   palette = "RdBu",
-  direction = 1,
-  ...
+  direction = 1
 )
 
 gg_likert_stacked(
   data,
-  x,
+  facet_formula = NULL,
   include.order = FALSE,
   decreasing = FALSE,
+  palette = "RdBu",
+  direction = 1,
   include.value = TRUE,
-  facet_formula = x,
   facet_label_wrap = 50,
   labels_size = 3.5,
   labels_color = "black",
@@ -47,6 +47,8 @@ likert_stacked(
   data,
   x = NULL,
   include.order = FALSE,
+  include.percent = TRUE,
+  margin = 1,
   decreasing = FALSE,
   main = "",
   ylab = "",
@@ -66,6 +68,10 @@ likert_stacked(
 \arguments{
 \item{data}{data.frame im long Format}
 
+\item{...}{to Summarise_likert()}
+
+\item{facet_formula}{formula. ggplot NULL or formula Item ~ .}
+
 \item{include.order, decreasing}{character. include.order = c("right", "left")  die Sortierung}
 
 \item{include.reference, cutoff}{numeric. Referenzline}
@@ -80,11 +86,7 @@ likert_stacked(
 
 \item{width}{numeric.  ggstats breite der Balken}
 
-\item{facet_formula}{formula. ggplot}
-
 \item{palette, direction}{scharacter. ggstats  scale_fill_brewer  direction = 1 or -1}
-
-\item{...}{not used}
 
 \item{labels_size}{numeric. gg_likert_stacked}
 
@@ -96,12 +98,16 @@ likert_stacked(
 
 \item{reverse_fill}{logical.}
 
+\item{x}{formula  ~ Freq | Group}
+
+\item{include.percent, margin}{Prozent darstellen margin = 1 bzw bei Gruppen  margin = 1:2}
+
 \item{add_labels}{logical. gg_likert_stacked}
 }
 \value{
 ggplot
 
-ggplot
+lattice barchart
 }
 \description{
 Barcharts for Likert

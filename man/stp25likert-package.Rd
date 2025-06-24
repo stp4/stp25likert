@@ -6,7 +6,7 @@
 \alias{stp25likert-package}
 \title{stp25likert: Analysis of Likert-type items.}
 \description{
-The purpose of stp25stat2 is to facilitate work and provide functions for creating statistical evaluation tables.
+The purpose of stp25likert is to make work easier by providing functions for creating Likert tables and plots.
 }
 \author{
 \strong{Maintainer}: Wolfgang Peter \email{w.peter@statistik-peter.at}

@@ -29,7 +29,6 @@ Summarise_likert_wide(...)
 
 Summarise_multi_wide(
   ...,
-  type.wide = TRUE,
   use.level = 1,
   reverse.levels = FALSE,
   reorder.levels = NA
@@ -44,6 +43,7 @@ Summarise_multi_long(
 
 Summarise_multi(
   ...,
+  type.wide = FALSE,
   use.level = 1,
   reverse.levels = FALSE,
   reorder.levels = NA
@@ -99,4 +99,5 @@ Likert |>
                      FC.4 = c("q7", "q8", "q9")
                    )
   ) |> attr("tbl")  
+  
 }

@@ -49,7 +49,8 @@ likertplot(...)
   xlim = NULL,
   col = NULL,
   rightAxis = FALSE,
-  as.percent = TRUE,
+  include.percent = TRUE,
+  as.percent = include.percent,
   columns = 2,
   space = "top",
   between = list(x = 1 + (horizontal), y = 0.5 + 2 * (!horizontal)),
@@ -70,7 +71,7 @@ likertplot(...)
 Format tibble (wide)
 sex Item Strongly Neither Agree}
 
-\item{x}{formula}
+\item{formula}{formula   Item ~ . | .grouping}
 
 \item{include.order, decreasing}{logical or character, Sortieren der Items}
 
@@ -87,7 +88,7 @@ sex Item Strongly Neither Agree}
 \item{positive.order}{das nicht verwenden!! - wird ueber Tbll_likert oder include.order = TRUE gesteuert.}
 }
 \value{
-lattice Plot
+lattice barchart
 }
 \description{
 copie from HH:::plot.likert.formula
@@ -175,4 +176,7 @@ HH::likert(
 #  strip.lines = 2,
 #  strip.left.lines = 1
 # )
+}
+\seealso{
+Orginale Funktion von R. Heiberger \code{\link[HH]{plot.likert}}
 }

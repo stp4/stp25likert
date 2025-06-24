@@ -58,7 +58,7 @@ Likert |>
                           FC.2 = c("q1", "q9", "q2", "q5"),
                           FC.3 = c("q3", "q4", "q6"),
                           FC.4 = c("q7", "q8")
-                        )) |> 
+                        )) |>
  order_weighted_mean(include.reference=4, include.order = "l")
- 
+
 }
