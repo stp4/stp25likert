@@ -1,16 +1,17 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' @importFrom lifecycle deprecate_soft
-#' @importFrom lifecycle deprecated
+#' @importFrom lifecycle deprecate_soft deprecated
 #' @importFrom dplyr .data sym
-#' @importFrom ggplot2 after_stat
+#' 
+#' @importFrom stats as.formula formula median na.omit reformulate sd xtabs
+#' @importFrom utils head
+ 
 
 utils::globalVariables(c("prop"))
 
-#' @importFrom purrr %||%
-purrr::`%||%`
-
+#    @importFrom purrr %||%
+#    purrr::`%||%`
 
 
 # \lifecycle{experimental}

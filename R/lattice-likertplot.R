@@ -1,4 +1,4 @@
-#' Barcharts for Likert
+#' Lattice-Barcharts for Likert and Multi-Response
 #' 
 #' copie from HH:::plot.likert.formula
 #' Constructs and plots diverging stacked barcharts for Likert
@@ -12,16 +12,22 @@
 #' @param main,ylab,sub,xlab Beschriftung
 #' @param col HH::brewer.pal.likert
 #' @param wrap Zeien Umbrechen 
-#' @param rightAxis,as.percent,ReferenceZero,reference.line.col,col.strip.background
+#' @param rightAxis,as.percent,reference.line.col,col.strip.background
 #' an HH:::plot.likert.formula
 #' @param include.order,decreasing logical or character, Sortieren der Items
 #' @param positive.order das nicht verwenden!! - wird ueber Tbll_likert oder include.order = TRUE gesteuert.
 #' @param auto.key,columns,space  columns = 2,
 #' @param ... HH:::plot.likert.formula  between=list(x=0))
+#' 
+#' @param nlevels,m_weight,groups,items,measure,grouping Internal
+#' @param  include.reference,reverse.levels,include.total logical Likert
+#' @param use.level numeric Multi
+#' @param ylim,xlim,between,horizontal,par.settings,stack,border to lattice
+#'
 #'
 #' @return  lattice barchart
 #' @export
-#'
+#' @importFrom HH plot.likert 
 #' @examples
 #'   
 #' Likert <- dummy_likert_data(245)
@@ -103,9 +109,7 @@
 #' # )
  
 likertplot <- function(...){
-  
   UseMethod("likertplot")
-  
 }
 
 
@@ -124,8 +128,7 @@ likertplot.data.frame <- function(
     reverse.levels = FALSE, #nur mit Langen Daten
     nlevels = NULL,
     m_weight =NULL,
-    groups = NULL, 
-    ReferenceZero = include.reference,
+    groups = NULL,
     ...
 ){
   
@@ -140,8 +143,7 @@ likertplot.data.frame <- function(
       reverse.levels = reverse.levels,  
       nlevels = nlevels,
       m_weight = m_weight,
-      groups = groups, 
-      ReferenceZero = ReferenceZero,
+      groups = groups,
       ...
     )
   )
@@ -180,8 +182,8 @@ likertplot.data.frame <- function(
       }
       nlevels <- attr(data, "tbll")$nlevels
       m_weight  <- attr(data, "tbll")$m$m
-      if (!is.null(attr(data, "tbll")$ReferenceZero))
-        ReferenceZero <- attr(data, "tbll")$ReferenceZero
+      if (!is.null(attr(data, "tbll")$include.reference))
+        include.reference <- attr(data, "tbll")$include.reference
     }
     else {
       if (is.null(formula))
@@ -216,7 +218,7 @@ likertplot.data.frame <- function(
     measure = setdiff(names(data), all.vars(formula)),
     groups =  groups,
     grouping = attr(data, "tbll")$grouping,
-    ReferenceZero = ReferenceZero,
+    include.reference = include.reference,
     nlevels =  nlevels,
    # m_weight = m_weight,
 
@@ -235,32 +237,7 @@ likertplot.formula <- function(formula, data = NULL, ...) {
 }
 
  
-# likertplot.list<- function(
-#     x,
-#     formula=NULL,
-#     ReferenceZero=NULL,
-#     ...
-# ){
-#  if(is.null(formula)) formula <- x$formula
-#  
-#  nms<- names(x$results)
-#  measure <- setdiff(nms, all.vars(formula))
-#  items <- all.vars(formula)[1]
-#  groups <- setdiff(nms, c(items, measure))
-#   
-#  likertplot.default(
-#   x = formula,
-#   data = x$results,
-#   items=items,
-#   measure=measure,
-#   groups= if( length(groups) >0) groups else NULL,
-#   ReferenceZero = ReferenceZero ,
-#   nlevels =  x$nlevels,
-#   m_weight = x$m
-#   
-#   )
-#   
-# }
+
 
 #' @rdname likertplot
 #' @export
@@ -278,7 +255,7 @@ likertplot.default <-
            grouping=FALSE,
            nlevels,
           
-           ReferenceZero = NULL,
+           include.reference = NULL,
            include.order = NULL,
            decreasing =  TRUE,
            
@@ -313,8 +290,8 @@ likertplot.default <-
     stop("positive.order geht nicht mehr\n\n Neu ist include.order aber die Ergebnisse im plot sind anderst!!\n")
 
   if (is.null(col)) {
-    col <- if (is.null(ReferenceZero)) likert_col(n=nlevels)
-           else likert_col(n=nlevels, middle = ReferenceZero)
+    col <- if (is.null(include.reference)) likert_col(n=nlevels)
+           else likert_col(n=nlevels, middle = include.reference)
   }
     
   if (!is.null(include.order)) {
@@ -324,7 +301,7 @@ likertplot.default <-
         items = items,
         groups = groups,
         nlevels = nlevels,
-        ReferenceZero = ReferenceZero,
+        include.reference = include.reference,
         include.order = include.order,
         decreasing = decreasing
       )
@@ -346,7 +323,8 @@ likertplot.default <-
   
 
   lattice_plot <-
-    HH:::plot.likert.formula(
+  #  HH:::plot.likert.formula(
+    HH::plot.likert(
       x = x,
       data = data,
       main = main,
@@ -358,7 +336,8 @@ likertplot.default <-
       positive.order = FALSE,
       as.percent = as.percent,
       auto.key = auto.key,
-      ReferenceZero =  ReferenceZero,
+      
+      ReferenceZero =  include.reference,
       reference.line.col = reference.line.col,
       col.strip.background = col.strip.background,
       between = between,
@@ -391,15 +370,18 @@ likertplot.default <-
 
 
 
-
-#' @rdname gg_likertplot
+#' @rdname likertplot
 #' 
 #' @return lattice barchart
 #' @import lattice
 #' @export
 #' 
 #' @param include.percent,margin Prozent darstellen margin = 1 bzw bei Gruppen  margin = 1:2
+#' 
+#' col = RColorBrewer::brewer.pal(2, "BrBG")
+#' 
 #' @param x formula  ~ Freq | Group
+#' 
 likert_stacked <-
   function(data,
            x = NULL,
@@ -413,8 +395,11 @@ likert_stacked <-
            xlab =   "Freq" ,
            ylim = NULL,
            xlim = NULL,
+           
+           stack = TRUE,
+           border = "gray90",
            col = NULL,
-           rightAxis = FALSE,
+           # rightAxis = FALSE,
            # as.percent = TRUE,
            columns = 2,
            space = "top",
@@ -436,11 +421,12 @@ likert_stacked <-
     col_wrap <- attr(data, "tbll")$columns
     grouping <- attr(data, "tbll")$grouping
     nlevels  <- attr(data, "tbll")$nlevels
+    if (nlevels < 3) nlevels <- 3
     
     if (!is.null(include.order))
       data <- order_weighted_mean(
         data,
-        ReferenceZero = NULL,
+        include.reference = NULL,
         include.order = include.order,
         decreasing = decreasing
       )
@@ -456,7 +442,9 @@ likert_stacked <-
       fm <- all.vars(x)
       fm <-  paste(fm[-which(fm == ".")], collapse = "+")
       fm <- formula(paste("Freq ~" , fm, "+ levels"))
-      data <- as.data.frame(prop.table(xtabs(fm, data), margin = 1))
+      data <- as.data.frame(prop.table(
+        xtabs(fm, data), 
+        margin = margin))
       data$Freq <- data$Freq * 100
       xlab <- "Percent"
     }
@@ -466,40 +454,43 @@ likert_stacked <-
       rhs <-   paste(all.vars(x[[3]])[-1], collapse = "+")
       x <-  as.formula(paste(x[[2]], "~Freq|", rhs))
     }
-    if (nlevels < 3)
-      nlevels <- 3
     
     
     if (!grouping) {
-      barchart(
+      lattice::barchart(
         x,
         data,
         groups = levels,
         main = main,
         xlab = xlab,
-        stack = TRUE,
-        border = NULL,
-        col = RColorBrewer::brewer.pal(nlevels, "BrBG")
+        stack = stack,
+        border = border,
+        col =  if (is.null(col))
+          RColorBrewer::brewer.pal(nlevels, "BrBG")
+        else
+          col,
+        par.settings  = par.settings
       )
     }
     else {
       ngr <-  length(attr(data, "tbll")$groups)
       ngr2 <- length(unique(data$.grouping))
-      barchart(
+      lattice::barchart(
         x,
         data,
         groups = levels,
         main = main,
         xlab = xlab,
-        stack = TRUE,
-        border = NULL,
+        stack = stack,
+        border = border,
         col =  if (is.null(col))
           RColorBrewer::brewer.pal(nlevels, "BrBG")
         else
           col,
         scales = list(y = list(relation = "free")),
         layout = c(ngr, ngr2),
-        between = list(y = 0)
+        between = list(y = 0),
+        par.settings  = par.settings
       )
     }
   }
@@ -530,11 +521,6 @@ likert_col <- function(n = 5,
                        # c("RdBl", "BlRd", "RdGr", "GrRd","GrBl", "BlGr","Bw"),
                        middle = mean(1:n),
                        middle.color =  "gray90") {
-  
-  # print(list(n = n,
-  #            name = name,
-  #            middle = middle,
-  #            middle.color = middle.color))
   stp25settings:::likert_col(
     n = n,
     name = name,
@@ -542,212 +528,5 @@ likert_col <- function(n = 5,
     middle.color = middle.color
   )
 }
-
- 
-# likert_plot <-
-#   function(...,
-#            main = '',
-#            ylab = "",
-#            sub = "",
-#            xlab = if (as.percent) "Prozent" else "Anzahl",
-#            ylim =NULL, xlim=NULL,
-#            type = 1,
-#            col = NULL,
-#            rightAxis = FALSE,
-#            as.percent = TRUE,
-#            auto.key = list(space = space, columns = columns, between = 1),
-#            ReferenceZero = include.reference,
-#            reference.line.col = "gray65",
-#            col.strip.background = "gray97",
-#            wrap = TRUE,
-#            columns = 2,
-#            space = "top",
-#            horizontal = TRUE,
-#            #as.table = TRUE,
-#            positive.order = NULL,
-#           # reverse = ifelse(horizontal, as.table, FALSE),
-#            between = list(x = 1 + (horizontal), y = 0.5 +2 * (!horizontal)),
-#            par.strip.text = list(lines = 1, cex = .8),
-#            par.settings = NULL,
-#            include.reference = NULL,
-#            include.total = FALSE,
-#            relevel = NULL, relabel =NULL,
-#            include.order = NULL,
-#            decreasing =  TRUE,
-# 
-#            caption = "",
-#            include.table = FALSE,
-#            include.mean = TRUE,
-#            include.n = FALSE,
-#            include.na = FALSE,
-#            include.percent = TRUE,
-#            include.count = TRUE)
-# {
-# 
-#   if(!is.null(positive.order))
-#     stop("positive.order geht nicht mehr\n\n Neu ist include.order aber die Ergebnisse im plot sind anderst!!\n")
-# 
-#   if (is.null(relevel) & is.null(relabel)  ){
-#     X <- Likert(..., include.total=include.total)
-#    }
-#   else if (!is.null(relevel)){
-#     X_old <-  stp25tools::prepare_data2(...)
-# 
-#     X_old$data[X_old$measure.vars] <-
-#       stp25tools::dapply2(
-#         X_old$data[X_old$measure.vars],
-#         fun = function(x) {
-#           if (nlevels(x) == length(relevel))
-#             levels(x) <- relevel
-#           else
-#             stop("\nDie relevel stimmen in der laenge nicht überein!\n")
-#           x
-#         }
-#       )
-#     X <- Likert(X_old$formula,  X_old$data, include.total=include.total)
-#   }
-#   else if (!is.null(relabel)){
-#     X_old <-  stp25tools::prepare_data2(...)
-#     
-#     X_old$data[X_old$measure.vars] <-
-#       stp25tools::dapply2(
-#         X_old$data[X_old$measure.vars],
-#         fun = function(x) {
-#              factor(x, levels = relabel )
-#         }
-#       )
-#     X <- Likert(X_old$formula,  X_old$data, include.total=include.total)
-#   }
-#   else {"Hier sollte ich nie landen"}
-#   
-#   
-#  if (!is.null(include.order)) {
-#     X$results <-  re_order_mean(X$results, X$m, decreasing, include.order)
-#   }
-# 
-#  if(include.table){
-#     stp25output2::Output(
-#       Tbll_likert(X,
-#                               include.reference = ReferenceZero,
-#                               include.mean = include.mean,
-#                               include.n = include.n,
-#                               include.na = include.na,
-#                               include.percent = include.percent,
-#                               include.count = include.count
-#                               ),
-#       caption = caption
-#     )}
-# 
-#  if( type !=1 ){
-#   fm <- X$formula
-#   x_in <- all.names(fm)
-# 
-#   if (length(x_in) == 5) {
-#     X$formula <-  formula(paste(x_in[5], x_in[1], x_in[4], x_in[3], x_in[2]))
-#   } else if (length(x_in) == 7) {
-#     X$formula <-
-#       formula(paste(x_in[6],  x_in[1], x_in[4], x_in[3], x_in[2], x_in[5], x_in[7]))
-#   }
-# }
-# 
-#  likertplot(
-#     X,
-#     main = main,
-#     ylab = ylab,
-#     sub = sub,
-#     xlab = xlab,
-#     ylim = ylim, xlim = xlim,
-#     col = col,
-#     rightAxis = rightAxis,
-#   #  positive.order = positive.order,
-#     as.percent = as.percent,
-#     auto.key = auto.key,
-#     ReferenceZero = ReferenceZero,
-#     reference.line.col = reference.line.col,
-#     col.strip.background = col.strip.background,
-#     wrap = wrap,
-#     horizontal = horizontal,
-#   #  as.table = as.table,
-#   #  reverse =reverse,
-#     between = between,
-#     par.strip.text = par.strip.text,
-#   par.settings =par.settings
-# 
-# 
-#   )
-# 
-# }
-
- 
-# re_order_mean <-
-#   function(data,
-#            m, # mittelwerte
-#            decreasing = TRUE,
-#            include.order,
-#            item = "Item") {
-#   if (is.logical(include.order) & include.order) {
-#  
-#       my_order <-
-#         tapply(
-#           m, data[[item]],
-#           FUN = function(x) {mean(x, na.rm = TRUE)}
-#         )
-#   #  print(levels(data[[item]]))
-# #print(my_order)
-#       data[[item]] <-
-#         factor(data[[item]], names(my_order)[order(my_order, decreasing = decreasing)])
-#     }
-#     else  if (is.numeric(include.order)) {
-#       # Das ist glaube ich nicht mehr zu verwenden ??
-#       positive.order <- FALSE
-#       ny_levels <- levels(data[[item]])
-#       if (length(ny_levels) != length(include.order))
-#         stop(
-#           "include.order ist die Reihenfolge der Items - muss also exakt gleich lang sein wie die Items!"
-#         )
-#       data[[item]] <-
-#         factor(data[[item]], ny_levels[include.order])
-#     }
-#     
-#     data
-#   }
-
-
-
-
-
-
-
-
-
-
-# likertplot(dat16, Question ~.)
-#likertplot(Question ~., dat16, include.order = c(5,4,3,1,2))
-# likertplot(Question ~., dat16, include.order = "l")
-# likertplot(Question ~.|Sex, dat, include.order = TRUE,
-#            include.total=TRUE)
-# 
-# 
-# DF |>
-#   Summarise_likert(  
-#     q1,q2,q3,q4,q5,q6,
-#     by = ~ sex,
-#     include.total = TRUE,
-#     include.order = TRUE) |>
-#   likertplot( )
-
-# DF |>
-#   Summarise_likert(
-#     q1,q2,q3,q4,q5,q6,
-#     by = ~ sex,
-#     include.total = TRUE,
-#     include.order = TRUE) |>
-#   likertplot()
-# 
-# 
-# DF |>
-#   likertplot(
-#     q1+q2+q3+q4+q5+q6~ sex
-#   ) 
 
 

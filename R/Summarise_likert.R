@@ -1,10 +1,9 @@
-#' Summary likert data
+#' Summarise  Likert-type and Multi-Response Items.
 #' 
 #' Summarise_likert: Summe der Items als Wide-data.frame.
 #' 
 #' Summarise_likert_wide = Summarise_likert
 #' 
-#' You could use `gglikert_data()` to just produce the dataset to be plotted.
 #'
 #' @param x Tbll_likert - Objekt
 #' @param ... an Summarise

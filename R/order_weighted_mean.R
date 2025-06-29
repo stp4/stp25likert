@@ -11,8 +11,11 @@
 #' @param nlevels  null. or character internal
 #' @param m_weight numeric. kann verändert werden internal
 #' @param include.order .logical or character richtung der sortierung
+#' @param include.mean logical.
 #' @param decreasing logical. zu or abnahme
-#' @param include.reference,ReferenceZero numeric.neutraler Wert
+#' @param include.reference numeric.neutraler Wert
+#' Bei Null wird das Gewicht m_weight die Sequenz aus der Laenge der levels also  1 2 3 4 5 
+#'  wenn zb include.reference = 5 uebergeben wird dann wird das Gewicht  0.25 0.50 0.75 1.00 5.00 
 #' @param dat_attr list. internal
 #'
 #' @return  tibble
@@ -30,19 +33,57 @@
 #'                           FC.4 = c("q7", "q8")
 #'                         )) |>
 #'  order_weighted_mean(include.reference=4, include.order = "l")
-#'
+#'  
+#'  dat13 <- stp25tools::get_data(
+#' "Sex     Question 	                      Platz.1	Platz.2	Platz.3	Platz.4	Platz.5
+#' male   'Relaparotomie'                  0.170    0.383   	 0.170   	 0.149   	 0.128
+#' male   'Beiziehen des Palliativteams'   0     	 0.319   	 0.532   	 0.149   	 0
+#' male   'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
+#' male   'Wille der Patientin erheben'		0.830    0.128   	 0.021   	 0.021   	 0
+#' male   'Einholen eines Ethikvotums'		  0     	 0.106   	 0.128   	 0.234   	 0.532
+#' female 'Relaparotomie'                  0.180    0.373   	 0.170   	 0.149   	 0.128
+#' female 'Beiziehen des Palliativteams'   0.1   	 0.219   	 0.442   	 0.139   	 0.1
+#' female 'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
+#' female 'Wille der Patientin erheben'		0.830    0.028   	 0.021   	 0.021   	 0.1
+#' female 'Einholen eines Ethikvotums'		  0.1    	 0.06   	 0.128   	 0.234   	 0.532
+#' "
+#' )
+#' 
+#' order_weighted_mean(dat13[1:5, -1], 
+#'                     Question ~ . , 
+#'                     include.mean = TRUE)
+#'                     
+#' order_weighted_mean(dat13[1:5, -1], 
+#'                     Question ~ . , 
+#'                     include.reference = 5,
+#'                     include.mean = TRUE)
+#' 
+#' order_weighted_mean(dat13[1:5, -1], 
+#'                     Question ~ . , 
+#'                     include.order = "r", include.mean = TRUE)
+#' order_weighted_mean(dat13[1:5, -1], 
+#'                     Question ~ . , 
+#'                     include.order = "r", include.mean = TRUE)
+#' 
+#' # hier habe ich einen Fehler aber das Verwende ich eh nicht?? oder doch 
+#' # order_weighted_mean(dat13,
+#' #                    Question ~ . |Sex,
+#' #                    include.mean = TRUE)
+#' #
 order_weighted_mean <- function(data,
                                 x,
                                 include.reference = NULL,
+                                include.order = TRUE,
+                                include.mean =FALSE,
                                 m_weight = NULL,
                                 measure = setdiff(names(data), all.vars(x)),
                                 items = intersect(all.vars(x[[2]]), names(data)),
                                 groups = intersect(all.vars(x[[3]]), names(data)),
                                 nlevels = ncol(data) - length(all.vars(x)) + 1,
-                                ReferenceZero = include.reference,
-                                include.order = FALSE,
                                 decreasing = TRUE,
                                 dat_attr = attr(data, "tbll")) {
+  
+  
   # cat("Aha du willst also sortieren.\n")
   include.weight <- TRUE
   orientatio_left <- FALSE
@@ -71,8 +112,7 @@ order_weighted_mean <- function(data,
   else if (include.order & !decreasing) {
     orientatio_left <- TRUE
   }
-  
-  
+
   if (!is.null(dat_attr)) {
     x <- dat_attr$formula
     measure <- dat_attr$measure
@@ -104,18 +144,29 @@ order_weighted_mean <- function(data,
     else
       m_weight <- seq_len(nlevels)
   }
+  # cat("\nm_weight\n")
+  # print(m_weight)
   
-  if (!is.null(ReferenceZero)) {
+  if (!is.null(include.reference)) {
+    #' #  include.reference   neutraler Wert
+    #' #  Bei Null wird das Gewicht m_weight die Sequenz aus 
+    #' #  der Laenge der levels also  1 2 3 4 5 
+    #' #  wenn zb include.reference = 5 uebergeben wird 
+    #' #  dann wird das Gewicht  0.25 0.50 0.75 1.00 5.00 
+    
     if (orientatio_left)
-      m_weight[ceiling(ReferenceZero):nlevels] <-
-        (nlevels:ceiling(ReferenceZero)) /
+      m_weight[ceiling(include.reference):nlevels] <-
+        (nlevels:ceiling(include.reference)) /
         nlevels
     else
-      m_weight[1:(ceiling(ReferenceZero - 1))] <-
-        1:(ceiling(ReferenceZero - 1)) / ceiling(ReferenceZero - 1)
+      m_weight[1:(ceiling(include.reference - 1))] <-
+        1:(ceiling(include.reference - 1)) / ceiling(include.reference - 1)
   }
+ 
+  
   
   m_weight <- colSums(t(data_wide[measure]) * m_weight, na.rm = TRUE)
+
   
   if (length(groups) > 0) {
     m_weight <- tapply(
@@ -129,13 +180,24 @@ order_weighted_mean <- function(data,
   else{
     names(m_weight) <- as.character(data_wide[[items]])
   }
+   
   
+  
+   if(include.mean) {
+     data_wide$m_weight <- m_weight
+  }
+ 
   ord <- order(m_weight, decreasing  = TRUE)
   data_wide[[items]] <- factor(data_wide[[items]], names(m_weight)[ord])
   data_wide$ordr_weight <- as.numeric(data_wide[[items]])
-  data_long[[items]] <- factor(data_long[[items]], names(m_weight)[ord])
+ 
+   data_long[[items]] <- factor(data_long[[items]], names(m_weight)[ord])
   data_long$ordr_weight <- as.numeric(data_long[[items]])
   
+    
+
+  
+      
   if (is_wide) {
     
     if(is.null(data_long)) return(data_wide)
@@ -161,54 +223,4 @@ order_weighted_mean <- function(data,
   }
 }
 
-
-#
-# dat13 <- get_data(
-# "
-# Sex     Question 	                      Platz.1	Platz.2	Platz.3	Platz.4	Platz.5
-# male   'Relaparotomie'                  0.170    0.383   	 0.170   	 0.149   	 0.128
-# male   'Beiziehen des Palliativteams'   0     	 0.319   	 0.532   	 0.149   	 0
-# male   'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
-# male   'Wille der Patientin erheben'		0.830    0.128   	 0.021   	 0.021   	 0
-# male   'Einholen eines Ethikvotums'		  0     	 0.106   	 0.128   	 0.234   	 0.532
-# female 'Relaparotomie'                  0.180    0.373   	 0.170   	 0.149   	 0.128
-# female 'Beiziehen des Palliativteams'   0.1   	 0.219   	 0.442   	 0.139   	 0.1
-# female 'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
-# female 'Wille der Patientin erheben'		0.830    0.028   	 0.021   	 0.021   	 0.1
-# female 'Einholen eines Ethikvotums'		  0.1    	 0.06   	 0.128   	 0.234   	 0.532
-# "
-# )
-#
-# # order_weighted_mean(Question ~ . ,
-# #                     dat13,
-# #                     ReferenceZero = 2.5,
-# #                     include.order = "l")
-#
-#
-# order_weighted_mean(Question ~ . , dat13[1:5, -1])
-# order_weighted_mean(Question ~ . |Sex ,
-#                     dat13,
-#                     ReferenceZero = 2.5,
-#                     include.order = "r")
-#
-#
-#
-# order_weighted_mean(Question ~ . , dat13[1:5, -1],ReferenceZero = 2.5,include.order = "l")
-# order_weighted_mean(Question ~ . , dat13[1:5, -1],ReferenceZero = 2.5,include.order = "r")
-
-# require(tidyverse)
-#
-# require(stp25likert)
-#
-# Multi<- dummy_multi_data()
-# Likert<- dummy_likert_data()
-#
-# Likert |>
-#   Summarise_likert_long(q1,q2,q3,q4,q5,q6,q7,q8,q9,
-#                        # by =~ sex,
-#                         grouping = list(
-#                           FC.2 = c("q1", "q9", "q2", "q5"),
-#                           FC.3 = c("q3", "q4", "q6"),
-#                           FC.4 = c("q7", "q8")
-#                         )) |> order_weighted_mean(include.reference=4, include.order = "l")|>
-#   gg_likertplot(include.reference=3)
+ 

@@ -183,8 +183,6 @@ Multi |>
   theme(strip.text.y = element_text(angle = 0))
 ```
 
-    ## acet_formula: .grouping ~ Sex
-
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r

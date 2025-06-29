@@ -1,5 +1,7 @@
 #' Tbll_likert
 #'
+#'Analysis of Likert-type items.
+#' 
 #' @param ...  Likert-Objekt oder data+Formula
 #'
 #' @return data.frame mit attributen fuer plotlikert
@@ -22,7 +24,7 @@
 #'               q4,
 #'               include.percent = FALSE,
 #'               include.mean = FALSE) |>
-#'   stp25output2::Output() |>
+#' #  stp25output2::Output() |>
 #'   likertplot()
 #'
 #
@@ -30,6 +32,7 @@
 Tbll_likert <- function(...){
   UseMethod("Tbll_likert")
 }
+
 
 
 extract_likert <-
@@ -41,7 +44,6 @@ extract_likert <-
            include.order = FALSE,
            include.percent = TRUE,
            include.count = TRUE,
-           ReferenceZero = include.reference,
            labels = c("low", "neutral", "high"),
            decreasing = TRUE,
            ...) {
@@ -50,16 +52,16 @@ extract_likert <-
     
     note <- NULL
     
-    if (!is.null(ReferenceZero)) {
-      if (is.character(ReferenceZero))
-        ReferenceZero <- which(rslt$levels %in% ReferenceZero)
-      else if (!is.numeric(ReferenceZero))
-        ReferenceZero <- median(seq_len(rslt$nlevels))
+    if (!is.null(include.reference)) {
+      if (is.character(include.reference))
+        include.reference <- which(rslt$levels %in% include.reference)
+      else if (!is.numeric(include.reference))
+        include.reference <- median(seq_len(rslt$nlevels))
       
-      if (ceiling(ReferenceZero) == floor(ReferenceZero)) {
-        lowrange <- seq_len((ReferenceZero - 1))
-        neutral <- ReferenceZero
-        highrange <- (ReferenceZero + 1):rslt$nlevels
+      if (ceiling(include.reference) == floor(include.reference)) {
+        lowrange <- seq_len((include.reference - 1))
+        neutral <- include.reference
+        highrange <- (include.reference + 1):rslt$nlevels
         
         freq <- cbind(
           lowrange =  RowSums2(rslt$freq[, lowrange]),
@@ -79,24 +81,24 @@ extract_likert <-
         
         colnames(freq) <-
           c(
-            paste0(labels[1], "(1:", ReferenceZero - 1, ")"),
-            paste0(labels[2], "(", ReferenceZero, ")"),
-            paste0(labels[3], "(", ReferenceZero + 1, ":", rslt$nlevels, ")")
+            paste0(labels[1], "(1:", include.reference - 1, ")"),
+            paste0(labels[2], "(", include.reference, ")"),
+            paste0(labels[3], "(", include.reference + 1, ":", rslt$nlevels, ")")
           )
         
         rslt$freq <- freq
         
       } else{
-        lowrange <- seq_len(floor(ReferenceZero))
-        highrange <- ceiling(ReferenceZero):rslt$nlevels
+        lowrange <- seq_len(floor(include.reference))
+        highrange <- ceiling(include.reference):rslt$nlevels
         
         freq <-
           cbind(lowrange =  RowSums2(rslt$freq[, lowrange]),
                 highrange = RowSums2(rslt$freq[, highrange]))
         colnames(freq) <-
           c(
-            paste0(labels[1], "(1:", floor(ReferenceZero), ")"),
-            paste0(labels[3], "(", ceiling(ReferenceZero), ":", rslt$nlevels, ")")
+            paste0(labels[1], "(1:", floor(include.reference), ")"),
+            paste0(labels[3], "(", ceiling(include.reference), ":", rslt$nlevels, ")")
           )
         if (is.null(note))
           note <-
@@ -157,13 +159,14 @@ extract_likert <-
 
 
 
+ 
 #' @rdname Tbll_likert
-#' 
-#' @param include.reference,labels,ReferenceZero  numeric include.reference = 2 (drei Gruppen)
+#'
+#' @param include.reference,labels  numeric include.reference = 2 (drei Gruppen)
 #' include.reference = 2.5 (zwei Gruppen)
 #'  Neutrales Element in Kombination mit
 #'  labels = c("low", "neutral", "high")
-#' @param include.mean,include.n,include.na Zusatz Ergebnisse
+#' @param include.mean,include.n Zusatz Ergebnisse
 #' @param include.na logical. Missing: hier werden die Prozent inclusive der NAs berechnet.
 #' @param include.order,decreasing sortierung nach mittelwert
 #' @param include.percent,include.count Format Prozent/Anzahl
@@ -173,6 +176,9 @@ extract_likert <-
 #' @param reverse.levels An Summarise_likert und Likert: logical  rev(item)
 #' @param exclude.levels An Summarise_likert und position des zu excludierenden levels 
 #' (zb 'exclude.levels = 5' ist das gleiche wie 'reorder.levels = -5')
+#' 
+#' @param ... alles an prepare.data
+#' @param x data.frame or Likert_objekt
 #' 
 #' @export
 Tbll_likert.data.frame <- 
@@ -188,7 +194,7 @@ Tbll_likert.data.frame <-
             include.total = FALSE,
             exclude.levels = NULL,
             decreasing = TRUE,
-            ReferenceZero = include.reference,
+ 
             labels = c("low", "neutral", "high"),
             reverse.levels = FALSE,
             reorder.levels = NA) {
@@ -205,7 +211,7 @@ Tbll_likert.data.frame <-
      
   extract_likert(
     rslt,
-    ReferenceZero = ReferenceZero,
+    include.reference = include.reference,
     include.mean = include.mean,
     include.n = include.n,
     include.na = include.na,
@@ -218,7 +224,6 @@ Tbll_likert.data.frame <-
 }
 
 #' @rdname Tbll_likert
-#' @param x Likert - Objekt
 #' @export
 #'
 Tbll_likert.likert <- function(x,
@@ -230,24 +235,24 @@ Tbll_likert.likert <- function(x,
                                include.percent = TRUE,
                                include.count = TRUE,
                                include.total = FALSE,
-                               ReferenceZero = include.reference,
+                               
                                labels = c("low", "neutral", "high"),
                                decreasing = TRUE, ...) {
 
   if( include.total) warnings("\n Achtung: include.total muss hier bei Summarise_likert() uebergeben werden.\n")
   note <- NULL # für include.reference
   
-  if (!is.null(ReferenceZero)) {
+  if (!is.null(include.reference)) {
     # x$freq und x$freq.na werden neu zudammengefasst
-    if (is.character(ReferenceZero))
-      ReferenceZero <- which(x$levels %in% ReferenceZero)
-    else if (!is.numeric(ReferenceZero))
-      ReferenceZero <- median(seq_len(x$nlevels))
+    if (is.character(include.reference))
+      include.reference <- which(x$levels %in% include.reference)
+    else if (!is.numeric(include.reference))
+      include.reference <- median(seq_len(x$nlevels))
 
-    if (ceiling(ReferenceZero) == floor(ReferenceZero)) {
-      lowrange <- seq_len((ReferenceZero - 1))
-      neutral <- ReferenceZero
-      highrange <- (ReferenceZero + 1):x$nlevels
+    if (ceiling(include.reference) == floor(include.reference)) {
+      lowrange <- seq_len((include.reference - 1))
+      neutral <- include.reference
+      highrange <- (include.reference + 1):x$nlevels
 
       freq <- cbind(
         lowrange = RowSums2(x$freq[, lowrange]),
@@ -267,23 +272,23 @@ Tbll_likert.likert <- function(x,
 
       colnames(freq) <-
         c(
-          paste0(labels[1], "(1:", ReferenceZero - 1, ")"),
-          paste0(labels[2], "(", ReferenceZero, ")"),
-          paste0(labels[3], "(", ReferenceZero + 1, ":", x$nlevels, ")")
+          paste0(labels[1], "(1:", include.reference - 1, ")"),
+          paste0(labels[2], "(", include.reference, ")"),
+          paste0(labels[3], "(", include.reference + 1, ":", x$nlevels, ")")
         )
       x$freq <- freq
 
     } else{
-      lowrange <- seq_len(floor(ReferenceZero))
-      highrange <- ceiling(ReferenceZero):x$nlevels
+      lowrange <- seq_len(floor(include.reference))
+      highrange <- ceiling(include.reference):x$nlevels
 
       freq <-
         cbind(lowrange = RowSums2(x$freq[, lowrange]),
               highrange = RowSums2(x$freq[, highrange]))
       colnames(freq) <-
         c(
-          paste0(labels[1], "(1:", floor(ReferenceZero), ")"),
-          paste0(labels[3], "(", ceiling(ReferenceZero), ":", x$nlevels, ")")
+          paste0(labels[1], "(1:", floor(include.reference), ")"),
+          paste0(labels[3], "(", ceiling(include.reference), ":", x$nlevels, ")")
         )
       if (is.null(note))
         note <-

@@ -1,22 +1,21 @@
-#' Barcharts for Likert
-#' 
-#' 
-#' 
-#' @param reverse_fill  logical.
+#' ggplot-Barcharts for Likert and Multi-Response
 #' 
 #' @param data  data.frame im long Format
+#' @param ... to Summarise_likert()
 #' @param facet_formula formula. ggplot NULL or formula Item ~ .
-#' @param include.reference,cutoff numeric. Referenzline
+#' @param include.reference numeric. Referenzline
 #' @param include.order,decreasing character. include.order = c("right", "left")  die Sortierung
-#' @param as.percent  logical. ggstats
-#' @param exclude_fill_values  character. ggstats
+#' @param include.percent  logical. 
+#' @param exclude_fill_values  character. ggstats ausgeschlossene Level
 #' @param reverse_likert logical.  ggstats nicht zu Verwenden Balken umdrehen gethaber nicht für die Beschriftung
 #' @param width numeric.  ggstats breite der Balken 
 #' @param y_label_wrap,facet_label_wrap ggstats numeric. Umbrechen der Labels
 #' @param palette,direction scharacter. ggstats  scale_fill_brewer  direction = 1 or -1
-#' @param ... to Summarise_likert()
-#' @import ggplot2
-#' @import ggstats
+
+#' 
+#' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_x_continuous after_stat scale_fill_brewer scale_y_discrete theme_light theme labs element_blank facet_grid label_wrap_gen position_fill scale_y_continuous geom_text
+#' @importFrom ggstats StatProp position_likert PositionLikert label_percent_abs label_number_abs 
+#' @importFrom scales label_wrap
 #' @export
 #' @examples
 #'  
@@ -34,25 +33,21 @@
 #'   gg_likertplot()
 #' 
 gg_likertplot <-
-  function(data, ...,
+  function(data, 
+           ...,
            facet_formula = NULL,
-           include.order = NULL, 
-           decreasing = FALSE, 
+           include.order = NULL, decreasing = FALSE, 
            include.reference = NULL, 
-           
-           #variable_labels = NULL,
-           as.percent = TRUE,
+           include.percent =  TRUE,
            exclude_fill_values = NULL,
-           y_label_wrap = 50,
            reverse_likert = FALSE,
-           width = .90,
-           
+          # include.value = FALSE
            facet_label_wrap = 50,
-           
-           cutoff  =include.reference,
-           palette = "RdBu", direction = 1
-          
-  ) {
+           y_label_wrap = 50,
+           palette = "RdBu", 
+           direction = 1,
+           width = .90
+          ) {
 
     if(!is.null( attr(data, "tbll_likert") )) {
       stop("\nDas habe ich noch nicht fertig verwende einfach Summarise_likert(!!!\n")
@@ -66,16 +61,14 @@ gg_likertplot <-
     grouping <- attr(data, "tbll")$grouping
     fm <- attr(data, "tbll")$formula
     
-    if (!is.null(include.order))
+    if (!is.null(include.order)){
       data <- order_weighted_mean(
         data,
-        ReferenceZero = include.reference,
+        include.reference = include.reference,
         include.order = include.order,
         decreasing = decreasing
-      )
+      )}
     
-
-
     if (is.null(facet_formula)) {
       if (grouping) {
         if (length(col_wrap) == 0) {
@@ -109,12 +102,13 @@ gg_likertplot <-
       }
     }
     
-    
     if (attr(data, "likert") == "wide") {
       data <- attr(data, "data_long")
      # attr(data, "likert") <- "long"
     }
     
+    
+
     p <-
       data |>
       ggplot2::ggplot(ggplot2::aes(
@@ -124,53 +118,50 @@ gg_likertplot <-
         weight = Freq
       ))
     
-    if (as.percent) {
+    if (include.percent) {
       p <- p +
         ggplot2::geom_bar(
           position = ggstats::position_likert(
             reverse = reverse_likert, 
             exclude_fill_values = exclude_fill_values,
-            cutoff =cutoff
+            cutoff = include.reference
             ),
           stat = ggstats::StatProp,
           complete = "fill",
           width = width
         ) +
-        labs(x = NULL, y = NULL, fill = NULL) +
-        scale_x_continuous(labels = label_percent_abs())
+       ggplot2::labs(x = NULL, y = NULL, fill = NULL) +
+        ggplot2::scale_x_continuous(labels = ggstats::label_percent_abs())
     }
-    else  {
+    else {
       p <- p +
         ggplot2::geom_bar(
           position = 
-            ggstats::position_likert_count(
+            position_likert_count(
               reverse = reverse_likert, 
               exclude_fill_values = exclude_fill_values,
-              cutoff =cutoff
+              cutoff = include.reference
               ),
-          stat = ggstats::StatProp,
-          complete = "fill",
           width = width
         ) +
-        scale_x_continuous(label = label_number_abs())
-      
+        ggplot2::scale_x_continuous(label = ggstats::label_number_abs())
     }
     
    # if (nlevels(data$levels) <= 11) 
     if(!is.null(palette))
     p <- p + 
-      scale_fill_brewer(palette = palette, direction = direction)
+      ggplot2::scale_fill_brewer(palette = palette, direction = direction)
 
     p <- p +
-      scale_y_discrete(labels = scales::label_wrap(y_label_wrap)) +
-      labs(x = NULL, y = NULL, fill = NULL) +
-      theme_light() +
-      theme(legend.position = "bottom",
-            panel.grid.major.y = element_blank())
+      ggplot2::scale_y_discrete(labels = scales::label_wrap(y_label_wrap)) +
+      ggplot2::labs(x = NULL, y = NULL, fill = NULL) +
+      ggplot2::theme_light() +
+      ggplot2::theme(legend.position = "bottom",
+            panel.grid.major.y = ggplot2::element_blank())
     
     if (!is.null(facet_formula))
       p <- p + 
-      facet_grid(
+      ggplot2::facet_grid(
         facet_formula,
         scales = "free",
         space = "free",
@@ -179,72 +170,97 @@ gg_likertplot <-
     p
   }
 
+#' @noRd
+#' @rdname position_likert
+#' @format NULL
+#' @usage NULL
+PositionLikertCount <- 
+  ggplot2::ggproto("PositionLikertCount",
+                   ggstats::PositionLikert,
+                   fill = FALSE,
+                   cutoff = NULL,
+                   reverse= FALSE
+  )
+
+
+#' @noRd
+#' @rdname position_likert
+position_likert_count <- function(vjust = 1,
+                                  reverse = FALSE,
+                                  exclude_fill_values = NULL,
+                                  cutoff = NULL
+                                  ) {
+  ggplot2::ggproto(
+    NULL,
+    PositionLikertCount,
+    vjust = vjust,
+    reverse = reverse,
+    exclude_fill_values = exclude_fill_values,
+    cutoff = cutoff
+  )
+}
+
+
+
+
+
 #' @rdname gg_likertplot
 #' 
-#' @param add_labels logical. gg_likert_stacked
-#' @param labels_size numeric. gg_likert_stacked
-#' @param labels_color character. gg_likert_stacked
-#' @param labels_accuracy numeric. gg_likert_stacked
-#' @param labels_hide_below numeric. gg_likert_stacked
-#'
+#' @param labels_size numeric. Schriftgrösse
+#' @param labels_color character.   Zweifarbig  labels_color = c("blue","gray")
+#' @param labels_hide_below numeric. minimum der Beschriftung
+#' @param include.value  logical. Prozent anzeigen
 #' @return ggplot
 #' @export
 #'
 #' @examples
 #' 
-#' 1+1
+#' Multi <- stp25likert::dummy_multi_data()
+#' 
+#' Multi |>
+#'   stp25likert::Tbll_multi(q1, q2, q3, q4, q5, q6, q7, by = ~ Sex) |>
+#'   gg_likert_stacked(
+#'     include.order = "l",
+#'     palette = "BrBG", direction = 1,
+#'     
+#'     labels_size = 4.5,
+#'     labels_color = c("blue","gray"),
+#'     width = .5)
 #' 
 gg_likert_stacked <- 
-  function(data, 
-           facet_formula = NULL, 
-           include.order = FALSE, decreasing = FALSE,
-           palette = "RdBu", direction = 1,
-           
-           include.value = TRUE,
-
-           facet_label_wrap = 50,
-           # include = dplyr::everything(),
-           # weights = NULL,
-           # y = ".question",
-           # variable_labels = NULL,
-           # sort = c("none", "ascending", "descending"),
-           # sort_method = c("prop", "mean", "median"),
-           # sort_prop_include_center = FALSE,
-           #  add_labels = TRUE,
-           labels_size = 3.5,
-           labels_color = "black",
-           labels_accuracy = 1,
-           labels_hide_below = .05,
-           # add_median_line = FALSE,
-           # y_reverse = TRUE,
-           y_label_wrap = 50,
-           reverse_fill = TRUE,
-           width = .9,
-           ...
-           
+  function(  
+    data, ..., 
+    facet_formula = NULL, 
+    include.order = FALSE, decreasing = FALSE,
+    palette = "BrBG", direction = 1,
+    
+    facet_label_wrap = 50,
+    include.value = TRUE,
+    include.percent =  TRUE,
+    labels_size = 3.5,
+    labels_color = "black",
+    labels_hide_below = .05,
+    y_label_wrap = 50,
+    width = .90
   ) {
     
-    if(!is.null( attr(data, "tbll_likert") )) {
-      stop("\nDas habe ich noch nicht fertig verwende einfach Summarise_likert(!!!\n")
-    }
     
+    if (!is.null(attr(data, "tbll_likert"))) 
+      data <-  attr(data, "tbll_likert")
     
     if (is.null(attr(data, "tbl")))
       data <- Summarise_likert_long(data, x, ...)
     
     col_wrap <- attr(data, "tbll")$columns
     grouping <- attr(data, "tbll")$grouping
-    # fm <- attr(data, "tbll")$formula
-  
-    if (is.null(facet_formula)){
+    
+    if (is.null(facet_formula))
       facet_formula <- attr(data, "tbll")$facet_formula
-    }
-      cat( "\facet_formula: ")
-     print(facet_formula)
+    
     if (!is.null(include.order)){
       data <- order_weighted_mean(
         data,
-        ReferenceZero = NULL,
+        include.reference = NULL,
         include.order = include.order,
         decreasing = decreasing
       )}
@@ -253,79 +269,70 @@ gg_likert_stacked <-
       data <- attr(data, "data_long")
     
     
+    if (length(labels_color) != 1) {
+      if (length(labels_color) == 0)
+        labels_color <-  "black"
+      else
+        labels_color <- rep_len(labels_color, nrow(data))
+    }
     p <- 
-      ggplot(data) +
-      aes(
+      ggplot2::ggplot(data) +
+      ggplot2::aes(
         x = Item,
         fill = levels,
         weight = Freq,
         by = Item
       ) +
-      geom_bar(
-        position = position_fill(reverse = reverse_fill),
-        stat = StatProp,
+      ggplot2::geom_bar(
+        position = ggplot2::position_fill(reverse = TRUE),
+        stat = ggstats::StatProp,
         complete = "fill",
         width = width
       ) +
-      labs(x = NULL, y = NULL, fill = NULL) +
-      scale_y_continuous(labels = label_percent_abs())
+      ggplot2::labs(x = NULL, y = NULL, fill = NULL) +
+      ggplot2::scale_y_continuous(labels = ggstats::label_percent_abs())
     
     if (include.value) {
       p <- p +
-        geom_text(
-          mapping = aes(
-            label = label_percent_abs(
-              hide_below = labels_hide_below,
-              accuracy = labels_accuracy
-            )(after_stat(prop))
-          ),
-          stat = StatProp,
+        ggplot2::geom_text(
+          mapping = 
+            ggplot2::aes(
+              label = ggstats::label_percent_abs(
+                hide_below = labels_hide_below, 
+                accuracy = 1)(ggplot2::after_stat(prop))
+            ),
+          stat = ggstats::StatProp,
           complete = "fill",
-          position = position_fill(
-            vjust = .5,
-            reverse = reverse_fill
-          ),
+          position = ggplot2::position_fill(vjust = .5, reverse = TRUE),
           size = labels_size,
           color = labels_color
         )
     }
-    # 
-    # if (add_median_line) {
-    #   p <- p +
-    #     ggplot2::geom_vline(xintercept = .5)
-    # }
-    # 
     
-    # scale_x_continuous(labels = ggstats::label_percent_abs()) +
-    #  scale_y_discrete(
-    #labels = scales::label_wrap(y_label_wrap)
-    #                  ) +
     
- 
     if (!is.null(facet_formula))
-      p <-  p + facet_grid(
+      p <- p + ggplot2::facet_grid(
         facet_formula,
         scales = "free",
         space = "free",
         labeller = ggplot2::label_wrap_gen(facet_label_wrap)
       )
     
-    p<- p +  theme_light() +
-      theme(
+    p <- p + 
+      ggplot2::theme_light() +
+      ggplot2:: theme(
         legend.position = "bottom",
-        panel.grid.major.y = element_blank()
+        panel.grid.major.y = ggplot2::element_blank()
       )
-    # 
-    # if (length(levels(data$.answer)) <= 11) {
-    if(!is.null(palette))
-      p <- p + 
-      scale_fill_brewer(palette = palette, direction = direction)
-    # }
     
-    p + coord_flip()
+    
+    if(!is.null(palette))
+      p <- p +
+      ggplot2::scale_fill_brewer(palette = palette,
+                                 direction = direction)
+    
+    p + ggplot2::coord_flip()
   }
 
 
-
-
- 
+    

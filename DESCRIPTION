@@ -1,28 +1,28 @@
 Package: stp25likert
 Type: Package
-Title: Analysis of Likert-type items.
+Title: Analysis of Likert-type and multi-response items.
 Version: 1.0.1
-Date: 23-06-2025
+Date: 29-06-2025
 Authors@R: person("Wolfgang", "Peter", email = "w.peter@statistik-peter.at",  role = c("aut", "cre"))
 Description: The purpose of stp25likert is to make work easier by providing functions for creating Likert tables and plots.
-License: GPL-3 
+License: GPL-3
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.3.2
+Depends: R (>= 4.1.0)
 Imports:
   stp25tools,   
   stp25stat2,  
   dplyr, 
-  purrr,
   ggplot2, 
-  HH,
   lifecycle,
   ggstats,
+  stats, 
+  HH,
   lattice,
-  RColorBrewer
+  RColorBrewer,scales,stp25settings
 Suggests: 
- stats, 
- methods,   
+ methods,  
+ purrr,  
  tibble,  
  plyr, 
  tidyr,   
@@ -35,4 +35,3 @@ Suggests:
  broom.helpers,
  labelled,
  latticeExtra
-Language: de_DE
