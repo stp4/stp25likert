@@ -7,7 +7,7 @@
 \alias{Summarise_multi_wide}
 \alias{Summarise_multi_long}
 \alias{Summarise_multi}
-\title{Summary likert data}
+\title{Summarise  Likert-type and Multi-Response Items.}
 \usage{
 Summarise_likert(
   x,
@@ -73,8 +73,6 @@ Summarise_likert: Summe der Items als Wide-data.frame.
 }
 \details{
 Summarise_likert_wide = Summarise_likert
-
-You could use `gglikert_data()` to just produce the dataset to be plotted.
 }
 \examples{
 

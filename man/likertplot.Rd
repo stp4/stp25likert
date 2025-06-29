@@ -5,7 +5,8 @@
 \alias{likertplot.data.frame}
 \alias{likertplot.formula}
 \alias{likertplot.default}
-\title{Barcharts for Likert}
+\alias{likert_stacked}
+\title{Lattice-Barcharts for Likert and Multi-Response}
 \usage{
 likertplot(...)
 
@@ -19,7 +20,6 @@ likertplot(...)
   nlevels = NULL,
   m_weight = NULL,
   groups = NULL,
-  ReferenceZero = include.reference,
   ...
 )
 
@@ -33,7 +33,7 @@ likertplot(...)
   groups,
   grouping = FALSE,
   nlevels,
-  ReferenceZero = NULL,
+  include.reference = NULL,
   include.order = NULL,
   decreasing = TRUE,
   main = "",
@@ -63,6 +63,29 @@ likertplot(...)
   positive.order = NULL,
   ...
 )
+
+likert_stacked(
+  data,
+  x = NULL,
+  include.order = FALSE,
+  include.percent = TRUE,
+  margin = 1,
+  decreasing = FALSE,
+  main = "",
+  ylab = "",
+  sub = "",
+  xlab = "Freq",
+  ylim = NULL,
+  xlim = NULL,
+  stack = TRUE,
+  border = "gray90",
+  col = NULL,
+  columns = 2,
+  space = "top",
+  auto.key = list(space = space, columns = columns, between = 1),
+  par.settings = NULL,
+  ...
+)
 }
 \arguments{
 \item{...}{HH:::plot.likert.formula  between=list(x=0))}
@@ -73,13 +96,27 @@ sex Item Strongly Neither Agree}
 
 \item{formula}{formula   Item ~ . | .grouping}
 
+\item{include.reference, reverse.levels, include.total}{logical Likert}
+
+\item{use.level}{numeric Multi}
+
+\item{nlevels, m_weight, groups, items, measure, grouping}{Internal}
+
+\item{x}{formula  ~ Freq | Group}
+
 \item{include.order, decreasing}{logical or character, Sortieren der Items}
 
 \item{main, ylab, sub, xlab}{Beschriftung}
 
+\item{ylim, xlim, between, horizontal, par.settings, stack, border}{to lattice}
+
 \item{col}{HH::brewer.pal.likert}
 
-\item{rightAxis, as.percent, ReferenceZero, reference.line.col, col.strip.background}{an HH:::plot.likert.formula}
+\item{rightAxis, as.percent, reference.line.col, col.strip.background}{an HH:::plot.likert.formula}
+
+\item{include.percent, margin}{Prozent darstellen margin = 1 bzw bei Gruppen  margin = 1:2
+
+col = RColorBrewer::brewer.pal(2, "BrBG")}
 
 \item{auto.key, columns, space}{columns = 2,}
 
@@ -88,6 +125,8 @@ sex Item Strongly Neither Agree}
 \item{positive.order}{das nicht verwenden!! - wird ueber Tbll_likert oder include.order = TRUE gesteuert.}
 }
 \value{
+lattice barchart
+
 lattice barchart
 }
 \description{

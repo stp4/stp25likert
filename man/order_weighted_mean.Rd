@@ -8,13 +8,13 @@ order_weighted_mean(
   data,
   x,
   include.reference = NULL,
+  include.order = TRUE,
+  include.mean = FALSE,
   m_weight = NULL,
   measure = setdiff(names(data), all.vars(x)),
   items = intersect(all.vars(x[[2]]), names(data)),
   groups = intersect(all.vars(x[[3]]), names(data)),
   nlevels = ncol(data) - length(all.vars(x)) + 1,
-  ReferenceZero = include.reference,
-  include.order = FALSE,
   decreasing = TRUE,
   dat_attr = attr(data, "tbll")
 )
@@ -24,7 +24,13 @@ order_weighted_mean(
 
 \item{x}{formula. wen nicht mit Summarise_likert erstellt dann die Formel}
 
-\item{include.reference, ReferenceZero}{numeric.neutraler Wert}
+\item{include.reference}{numeric.neutraler Wert
+Bei Null wird das Gewicht m_weight die Sequenz aus der Laenge der levels also  1 2 3 4 5 
+ wenn zb include.reference = 5 uebergeben wird dann wird das Gewicht  0.25 0.50 0.75 1.00 5.00}
+
+\item{include.order}{.logical or character richtung der sortierung}
+
+\item{include.mean}{logical.}
 
 \item{m_weight}{numeric. kann verändert werden internal}
 
@@ -35,8 +41,6 @@ order_weighted_mean(
 \item{groups}{null. or character internal}
 
 \item{nlevels}{null. or character internal}
-
-\item{include.order}{.logical or character richtung der sortierung}
 
 \item{decreasing}{logical. zu or abnahme}
 
@@ -60,5 +64,46 @@ Likert |>
                           FC.4 = c("q7", "q8")
                         )) |>
  order_weighted_mean(include.reference=4, include.order = "l")
+ 
+ dat13 <- stp25tools::get_data(
+"Sex     Question 	                      Platz.1	Platz.2	Platz.3	Platz.4	Platz.5
+male   'Relaparotomie'                  0.170    0.383   	 0.170   	 0.149   	 0.128
+male   'Beiziehen des Palliativteams'   0     	 0.319   	 0.532   	 0.149   	 0
+male   'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
+male   'Wille der Patientin erheben'		0.830    0.128   	 0.021   	 0.021   	 0
+male   'Einholen eines Ethikvotums'		  0     	 0.106   	 0.128   	 0.234   	 0.532
+female 'Relaparotomie'                  0.180    0.373   	 0.170   	 0.149   	 0.128
+female 'Beiziehen des Palliativteams'   0.1   	 0.219   	 0.442   	 0.139   	 0.1
+female 'Sterben zulassen'         	    0     	 0.064   	 0.149   	 0.447   	 0.340
+female 'Wille der Patientin erheben'		0.830    0.028   	 0.021   	 0.021   	 0.1
+female 'Einholen eines Ethikvotums'		  0.1    	 0.06   	 0.128   	 0.234   	 0.532
+"
+)
 
+order_weighted_mean(dat13[1:5, -1], 
+                    Question ~ . , 
+                    include.mean = TRUE)
+                    
+order_weighted_mean(dat13[1:5, -1], 
+                    Question ~ . , 
+                    include.reference = 5,
+                    include.mean = TRUE)
+
+order_weighted_mean(dat13[1:5, -1], 
+                    Question ~ . , 
+                    include.order = "r", include.mean = TRUE)
+order_weighted_mean(dat13[1:5, -1], 
+                    Question ~ . , 
+                    include.order = "r", include.mean = TRUE)
+
+# hier habe ich einen Fehler aber das Verwende ich eh nicht?? oder doch 
+# order_weighted_mean(dat13,
+#                    Question ~ . |Sex,
+#                    include.mean = TRUE)
+#
+#  include.reference   neutraler Wert
+#  Bei Null wird das Gewicht m_weight die Sequenz aus 
+#  der Laenge der levels also  1 2 3 4 5 
+#  wenn zb include.reference = 5 uebergeben wird 
+#  dann wird das Gewicht  0.25 0.50 0.75 1.00 5.00 
 }

@@ -4,7 +4,7 @@
 \name{stp25likert-package}
 \alias{stp25likert}
 \alias{stp25likert-package}
-\title{stp25likert: Analysis of Likert-type items.}
+\title{stp25likert: Analysis of Likert-type and multi-response items.}
 \description{
 The purpose of stp25likert is to make work easier by providing functions for creating Likert tables and plots.
 }

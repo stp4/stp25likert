@@ -24,7 +24,7 @@ status](https://www.r-pkg.org/badges/version/stp25stat2)](https://CRAN.R-project
 ``` r
 Likert |>
   Tbll_likert(q1, q2, q3, q4,
-              ReferenceZero = 2.5) |> 
+              include.reference = 2.5) |> 
   kable(caption =" Likert-Skale")
 ```
 
@@ -98,7 +98,7 @@ Likert |>
   Summarise_likert(q1, q2, q3, q4, 
                    include.total = TRUE, 
                    by =  ~ Sex)  |>
-  likertplot(include.order = "r", ReferenceZero = 3.5, auto.key =list(columns=5))
+  likertplot(include.order = "r", include.reference = 3.5, auto.key =list(columns=5))
 ```
 
 ![](README_files/figure-gfm/likert-plot-1-1.png)<!-- -->
